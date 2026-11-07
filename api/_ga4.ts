@@ -1,7 +1,7 @@
 /**
  * GA4 Measurement Protocol purchase (docs/attribution/00_DESIGN.md 5.7 step 3; PLAN.md Stage 6).
  *
- * OFF unless both GA4_API_SECRET and GA4_MEASUREMENT_ID are set (they are not in Production yet).
+ * OFF unless both GA4_API_SECRET and GA4_MEASUREMENT_ID are set (set in Production on 8.11.2026, secret "vercel-server").
  * Sent only when the order has a ga_client_id and consent_marketing is not "denied" (test orders are
  * stored as denied, so they never reach GA4). When the server will send, /api/pay-status tells the
  * browser not to send its own copy (ga4_browser=false), so one purchase is counted, not two.

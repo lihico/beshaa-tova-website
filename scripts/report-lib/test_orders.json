@@ -1,7 +1,12 @@
 {
-  "//": "Order ids the report always treats as tests (PLAN.md marketing_machine_2026-11 1.5). Rows whose notes contain the system-test note, or whose id contains TEST, are also excluded. BT2611QH3W1J: Lihi confirmed a test on 7.11.2026 (decision B); its notes say the system-test note and no Grow payment email exists for it.",
+  "//": "Order ids the report always treats as tests (PLAN.md marketing_machine_2026-11 1.5). Rows whose notes contain the system-test note, or whose id contains TEST, are also excluded. BT2611QH3W1J: Lihi confirmed a test on 7.11.2026 (decision B); its notes say the system-test note and no Grow payment email exists for it. On 7.11.2026 five more 4.11 rows were found to share the confirmed test order's phone and name (compared by hash): BT2611N7HZHE, BT2611HQ36PD, BT2611VE3S9G, BT26115EWAWM, BT26119A4M9K.",
   "ids": [
     "BT2611TEST01",
-    "BT2611QH3W1J"
+    "BT2611QH3W1J",
+    "BT2611N7HZHE",
+    "BT2611HQ36PD",
+    "BT2611VE3S9G",
+    "BT26115EWAWM",
+    "BT26119A4M9K"
   ]
 }

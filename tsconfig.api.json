@@ -1,0 +1,29 @@
+{
+  "//": "Type-check for the serverless functions in api/ (not part of `npm run build`; Vercel compiles them itself). DOM is in lib only because api/_voucher-pdf.ts passes a callback to Puppeteer's page.evaluate. Run: npx tsc -p tsconfig.api.json api/meta-ads.ts is excluded: it imports facebook-nodejs-business-sdk, which ships no types (pre-existing).",
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": [
+      "ES2022",
+      "DOM"
+    ],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "types": [
+      "node"
+    ],
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "allowImportingTsExtensions": true
+  },
+  "include": [
+    "api/**/*.ts"
+  ],
+  "exclude": [
+    "api/meta-ads.ts"
+  ]
+}

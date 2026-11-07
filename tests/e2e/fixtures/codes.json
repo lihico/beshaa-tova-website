@@ -1,0 +1,8 @@
+[
+  { "code": "pst-v5-eng-1a-biulib", "channel": "offline_print", "landing": "/", "utm_source": "poster", "utm_medium": "print",
+    "utm_campaign": "2610_posters_v5", "utm_content": "eng_1a", "utm_term": "biulib", "location": "BIU library",
+    "cost_ils": 12, "status": "active" },
+  { "code": "cafe-tre-table", "channel": "cafe_partner", "landing": "/cafe/tre", "utm_source": "cafe", "utm_medium": "partner",
+    "utm_campaign": "cafe_tre", "utm_content": "table", "status": "active" },
+  { "code": "old-retired", "channel": "offline_print", "landing": "/", "status": "retired" }
+]

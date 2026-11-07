@@ -2,6 +2,22 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+html {
+  scroll-behavior: smooth;
+  font-size: 18px;
+  overflow-x: clip;
+}
+
+body {
+  overflow-x: clip;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 19px;
+  }
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -60,24 +76,24 @@
   --color-warm-gray-100: #F0EEEB;
   --color-warm-gray-200: #E5DDD7;
   --color-warm-gray-300: #C5BAB0;
-  --color-warm-gray-400: #9B8E82;
+  --color-warm-gray-400: #57534E;
   --color-warm-gray-500: #6B6060;
 }
 
 :root {
   --radius: 0.625rem;
   --background: #ffffff;
-  --foreground: #3D2B1F;
+  --foreground: #211F1D;
   --card: #ffffff;
-  --card-foreground: #3D2B1F;
+  --card-foreground: #211F1D;
   --popover: #ffffff;
-  --popover-foreground: #3D2B1F;
+  --popover-foreground: #211F1D;
   --primary: #8B4530;
   --primary-foreground: #ffffff;
   --secondary: #FDF8F5;
   --secondary-foreground: #6E3625;
   --muted: #F0EEEB;
-  --muted-foreground: #9B8E82;
+  --muted-foreground: #57534E;
   --accent: #FAFAF8;
   --accent-foreground: #6B6060;
   --destructive: #ef4444;
@@ -90,7 +106,7 @@
   --chart-4: #E8D1C4;
   --chart-5: #F4E8E1;
   --sidebar: #FAFAF8;
-  --sidebar-foreground: #3D2B1F;
+  --sidebar-foreground: #211F1D;
   --sidebar-primary: #8B4530;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #FDF8F5;
@@ -108,7 +124,7 @@
   }
 }
 
-/* Custom scrollbar — matches terracotta/warm-gray brand */
+/* Custom scrollbar - matches terracotta/warm-gray brand */
 * {
   scrollbar-width: thin;
   scrollbar-color: #E8D1C4 transparent;
@@ -130,4 +146,25 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: #D4956B;
+}
+
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.illustration-fade {
+  mask-image: radial-gradient(ellipse 90% 85% at center, black 40%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 90% 85% at center, black 40%, transparent 100%);
+}
+
+.illustration-fade-soft {
+  mask-image: radial-gradient(ellipse 80% 75% at center, black 30%, transparent 95%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 75% at center, black 30%, transparent 95%);
 }

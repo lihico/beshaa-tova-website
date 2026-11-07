@@ -3,7 +3,42 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/$1" },
-    { "source": "/((?!api/).*)", "destination": "/index.html" }
-  ]
+    {
+      "source": "/q/:code",
+      "destination": "/api/q?code=:code"
+    },
+    {
+      "source": "/r/:handle",
+      "destination": "/api/q?r=:handle"
+    },
+    {
+      "source": "/api/grow-notify/:k",
+      "destination": "/api/grow-notify?k=:k"
+    },
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
+    },
+    {
+      "source": "/((?!api/)(?!.*\\..+$).*)",
+      "destination": "/index.html"
+    }
+  ],
+  "functions": {
+    "api/order.ts": {
+      "maxDuration": 60
+    },
+    "api/gift.ts": {
+      "maxDuration": 60
+    },
+    "api/gift-release.ts": {
+      "maxDuration": 60
+    },
+    "api/grow-notify.ts": {
+      "maxDuration": 60
+    },
+    "api/pay-status.ts": {
+      "maxDuration": 60
+    }
+  }
 }

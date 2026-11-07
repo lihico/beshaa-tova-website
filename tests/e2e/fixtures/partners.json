@@ -1,0 +1,5 @@
+[
+  { "partner_id": "testcreator", "code": "TESTCREATOR10", "name": "Test Creator", "platform": "instagram",
+    "handle": "@testcreator", "commission_type": "percent", "commission_value": 15, "buyer_discount_pct": 10,
+    "active": true, "fp_ref_id": null }
+]

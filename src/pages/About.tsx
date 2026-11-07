@@ -1,256 +1,179 @@
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { FadeIn } from "@/components/motion";
+
+const ease = [0.25, 0.1, 0.25, 1] as const;
 
 export default function About() {
   return (
-    <div className="px-6 py-16 md:py-24">
-      <div className="mx-auto max-w-3xl">
-        {/* Hero */}
-        <div className="mb-20 text-center">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.4, ease }}
+      className="px-6 py-16 md:py-24"
+    >
+      <div className="mx-auto max-w-2xl">
+        {/* Header + hero illustration */}
+        <FadeIn className="mb-14 text-center">
           <img
-            src="/illustrations/ketubah-story.png"
-            alt=""
-            className="mx-auto mb-6 h-28 w-28 object-contain md:h-36 md:w-36"
+            src="/illustrations/about-coffee-table.png"
+            alt="איור של שולחן קפה עם הערכה של בשעה טובה"
+            className="mx-auto mb-10 h-auto w-full max-w-sm illustration-fade"
           />
-          <h1 className="mb-3 text-3xl font-bold text-foreground md:text-5xl">
+          <h1 className="mb-2 text-3xl font-bold text-foreground md:text-4xl">
             הסיפור של &quot;בשעה טובה&quot;
           </h1>
           <p className="text-lg text-muted-foreground">
             איך הדייטים שלנו הפכו לערכת שיח לזוגות
           </p>
-        </div>
+        </FadeIn>
 
-        {/* --- Section 1: איך זה התחיל --- */}
-        <section className="mb-16">
-          <div className="mb-8 flex items-center gap-4">
-            <div className="h-px flex-1 bg-terracotta-200/60" />
-            <h2 className="whitespace-nowrap text-xl font-bold text-terracotta-600 md:text-2xl">
-              איך זה התחיל
-            </h2>
-            <div className="h-px flex-1 bg-terracotta-200/60" />
-          </div>
-
-          <div className="mb-8 rounded-2xl border border-terracotta-200/40 bg-terracotta-50/40 px-8 py-6 text-center">
-            <p className="text-2xl font-bold leading-relaxed text-terracotta-600 md:text-3xl">
-              &ldquo;לפני שנה התחתנתי.&rdquo;
-            </p>
-          </div>
-
-          <div className="space-y-4 leading-relaxed text-muted-foreground">
-            <p>
-              בתוך כל הטירוף הלוגיסטי - האולם, הצלם, הרבנות, ומי יושב ליד מי -
-              הרגשנו שאנחנו רוצים לצקת לתקופה הזאת קצת יותר משמעות. לא רק לתכנן
-              את האירוע, אלא באמת לעצור ולדבר על החיים עצמם שמתחילים עכשיו.
-            </p>
-            <p>
-              כי כל אחד מאיתנו הגיע מבית שבו דברים מסוימים היו &quot;ברור
-              שככה&quot; - ארוחת שישי, רמת הסדר, האיזון בין זמן יחד לזמן לבד,
-              וכמה חשוב לצאת לטבע. ואחרי עשור ביחד כבר היה לנו בית משותף, אבל לא
-              תמיד עצרנו לבדוק אם ההרגלים ש&quot;התקבעו&quot; לנו באמת עובדים
-              לשנינו.
-            </p>
-          </div>
-
-          {/* Illustration + highlight */}
-          <div className="my-10 flex flex-col items-center gap-6 md:flex-row">
-            <img
-              src="/illustrations/about-dates.png"
-              alt=""
-              className="h-40 w-40 flex-shrink-0 object-contain"
-            />
-            <div className="rounded-xl border-r-4 border-terracotta-300 bg-warm-gray-50 px-6 py-5">
-              <p className="font-medium leading-relaxed text-foreground">
-                אז קבענו לעצמנו דייט קבוע - פעם בשבוע, נושא אחר בכל פעם.
-                לפעמים התלבשנו יפה ויצאנו, לפעמים פשוט הלכנו לפארק. דיברנו על
-                כסף, על חלומות, על פחדים, ועל איך הבית שלנו ייראה.
-              </p>
-            </div>
-          </div>
-
-          <div className="space-y-4 leading-relaxed text-muted-foreground">
-            <p>
-              ולמרות שיש לנו תקשורת טובה שאנחנו גאים בה - משהו בשיח הזה היה
-              אחר. היציאה מהשגרה, ההתמקדות בנושא אחד בכל פעם, והקשב המלא -
-              אפשרו לנו להעמיק למקומות שביומיום פשוט אין זמן להגיע אליהם.
-            </p>
-          </div>
-
-          {/* What changed - visual list */}
-          <div className="mt-8 grid gap-3 sm:grid-cols-2">
-            {[
-              "כשעלתה על הפרק הצעת עבודה - פתאום היה לנו בסיס משותף לדבר על סדרי העדיפויות שלנו",
-              "כשהיה חיכוך - במקום להסתגר, הצלחנו לדבר על מה שבאמת קורה מתחת לפני השטח",
-              "כשנסענו להורים - הבנו הרבה יותר טוב למה הביקור מורכב לצד השני",
-              "כשאחד מאיתנו שיתף משהו פגיע - השני ידע בדיוק מאיפה זה מגיע",
-            ].map((item, i) => (
-              <div
-                key={i}
-                className="rounded-lg border border-border/60 bg-background px-5 py-4"
-              >
-                <p className="text-sm leading-relaxed text-foreground">{item}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-8 space-y-4 leading-relaxed text-muted-foreground">
-            <p>
-              התהליך הזה היה כל כך משמעותי עבורנו, שהפכנו את התובנות שלנו למסמך
-              &quot;כתובה אישית&quot;. כתבנו אותה ביחד, חתמנו עליה בחתונה
-              בנוכחות הקרובים אלינו, ותלינו אותה בבית -{" "}
-              <strong className="text-foreground">
-                תזכורת יומיומית למה שחשוב באמת.
-              </strong>
-            </p>
-          </div>
-        </section>
-
-        {/* --- Section 2: מהדייטים שלנו - אליכם --- */}
-        <section className="mb-16">
-          <div className="mb-8 flex items-center gap-4">
-            <div className="h-px flex-1 bg-terracotta-200/60" />
-            <h2 className="whitespace-nowrap text-xl font-bold text-terracotta-600 md:text-2xl">
-              מהדייטים שלנו - אליכם
-            </h2>
-            <div className="h-px flex-1 bg-terracotta-200/60" />
-          </div>
-
-          <div className="space-y-4 leading-relaxed text-muted-foreground">
-            <p>הרעיון להקים את &quot;בשעה טובה&quot; התבשל לאט.</p>
-            <p>
-              ביומיום שלי, אני בוגרת תואר שני בפסיכולוגיה שיקומית ודוקטורנטית
-              לפסיכולוגיה (באוניברסיטת בר-אילן), ופתאום קלטתי שמה שאני קוראת עליו
-              במחקרים - חופף בדיוק למה שחווינו בעצמנו:
-            </p>
-          </div>
-
-          {/* Research highlights */}
-          <div className="my-8 flex flex-col items-center gap-6 md:flex-row-reverse">
-            <img
-              src="/illustrations/about-research.png"
-              alt=""
-              className="h-36 w-36 flex-shrink-0 object-contain"
-            />
-            <div className="flex-1 space-y-3">
-              {[
-                "האנשים המאושרים ביותר מנהלים פי שניים שיחות עמוקות",
-                'כשנותנים שם לרגש ("אני כועס", "אני מפחדת") - מערכת העצבים ממש נרגעת',
-                "מה שבונה חיבור הוא לא עצם השיתוף - אלא ההרגשה שמישהו באמת שומע אותך",
-              ].map((text, i) => (
-                <div
-                  key={i}
-                  className="flex items-start gap-3 rounded-lg bg-terracotta-50/60 px-4 py-3"
-                >
-                  <span className="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full bg-terracotta-400" />
-                  <p className="text-sm font-medium leading-relaxed text-foreground">
-                    {text}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-4 leading-relaxed text-muted-foreground">
-            <p>
-              ומה שהכי מרגש:{" "}
-              <strong className="text-foreground">
-                למחקר יש כלים פרקטיים שמראים איך לייצר שיחות כאלה.
-              </strong>{" "}
-              לא סתם המלצה כללית של &quot;תדברו יותר&quot;, אלא ידע ספציפי על מה
-              פותח חסמים ומה באמת עוזר.
-            </p>
-            <p>
-              ואז הסתכלתי סביב. קבוצות החתונות בפייסבוק מלאות בספקים (וזה
-              חשוב!), אבל לפעמים העיסוק בכל מה שמסביב לא משאיר מקום לעיסוק בלב
-              העניין - הזוגיות. חיפשתי כלי שיעזור לזוגות לעשות את מה שאנחנו
-              עשינו: מובנה, מבוסס מחקר, בעברית, ובלי צורך באדם חיצוני. לא מצאתי.
-            </p>
-          </div>
-
-          <div className="mt-6 rounded-2xl border border-terracotta-200/40 bg-terracotta-50/40 px-8 py-5 text-center">
-            <p className="text-xl font-bold text-terracotta-600">
-              אז בניתי את זה בעצמי.
-            </p>
-          </div>
-        </section>
-
-        {/* --- Section 3: אתם המומחים לזוגיות שלכם --- */}
-        <section className="mb-16">
-          <div className="mb-8 flex items-center gap-4">
-            <div className="h-px flex-1 bg-terracotta-200/60" />
-            <h2 className="whitespace-nowrap text-xl font-bold text-terracotta-600 md:text-2xl">
-              אתם המומחים לזוגיות שלכם
-            </h2>
-            <div className="h-px flex-1 bg-terracotta-200/60" />
-          </div>
-
-          <div className="flex flex-col items-center gap-8 md:flex-row">
-            <img
-              src="/illustrations/about-values.png"
-              alt=""
-              className="h-36 w-36 flex-shrink-0 object-contain"
-            />
-            <div className="flex-1">
-              <p className="mb-4 text-lg font-semibold leading-relaxed text-foreground">
-                העיקרון שהכי חשוב לי ב&quot;בשעה טובה&quot; הוא שהכוח נשאר
-                אצלכם.
-              </p>
-              <div className="space-y-4 leading-relaxed text-muted-foreground">
-                <p>
-                  יש הרבה ספקים בחתונה, אבל &quot;בשעה טובה&quot; היא לא עוד וי
-                  ברשימה. אין פה אדם שלישי בחדר. אין מנחה, אין מטפל, ואין מישהו
-                  חיצוני שיגיד לכם מה נכון ומה לא.
-                </p>
-                <p>
-                  כל מה שהערכה עושה הוא לפנות לכם זמן, לייצר אווירה בטוחה,
-                  ולתת מסגרת מובנית כדי שהשיח יזרום - אבל עם המון חופש:
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-8 grid gap-px overflow-hidden rounded-xl border border-terracotta-200/40 bg-terracotta-200/40 sm:grid-cols-3">
-            {[
-              "אתם מכתיבים במה מתעסקים",
-              "אתם מחליטים על הקצב",
-              "התשובות הן אך ורק שלכם",
-            ].map((text, i) => (
-              <div key={i} className="bg-terracotta-50/60 px-5 py-4 text-center">
-                <p className="text-sm font-semibold text-terracotta-600">
-                  {text}
-                </p>
-              </div>
-            ))}
-          </div>
-
-          <p className="mt-6 text-center leading-relaxed text-muted-foreground">
-            אתם לא צריכים אף אחד כדי לנהל את השיחות החשובות של החיים שלכם -{" "}
-            <strong className="text-foreground">
-              אתם רק צריכים נקודת פתיחה טובה.
-            </strong>
+        {/* --- איך זה התחיל --- */}
+        <FadeIn className="mb-14 space-y-5 leading-relaxed text-muted-foreground">
+          <p className="border-r-2 border-terracotta-300 pr-4 text-lg font-medium text-foreground">
+            לפני שנה התחתנו.
           </p>
-        </section>
-
-        {/* --- קצת עליי --- */}
-        <section className="mb-16 flex flex-col items-center gap-3 text-center">
-          <div className="mb-2 h-8 w-px bg-terracotta-200" />
-          <p className="text-lg text-muted-foreground">
-            <strong className="text-foreground">ליהי.</strong> בוגרת תואר שני
-            בפסיכולוגיה שיקומית ודוקטורנטית לפסיכולוגיה (באוניברסיטת בר-אילן).
-            אוהבת
-            שיחות טובות, מהלב ובגובה העיניים.
+          <p className="text-[0.95rem]">
+            אנחנו ביחד כבר למעלה מעשור. בתוך כל הטירוף הלוגיסטי של החתונה הרגשנו
+            שאנחנו רוצים לצקת לתקופה הזאת קצת יותר משמעות - לא רק לתכנן אירוע,
+            אלא באמת לעצור ולדבר על החיים המשותפים שלנו.
           </p>
-          <div className="h-8 w-px bg-terracotta-200" />
-        </section>
+          <p className="text-[0.95rem]">
+            אז קבענו לעצמנו דייט שבועי - בכל פעם נושא אחר. כסף, חלומות, חיכוכים,
+            הבית שלנו. ולמרות שיש לנו תקשורת טובה - משהו בשיח הזה היה אחר.
+            לקראת החתונה הפכנו את התובנות לכתובה אישית, שתלויה אצלנו בבית עד היום.
+          </p>
 
-        {/* CTA */}
-        <section className="rounded-2xl border border-border/60 bg-warm-gray-50 p-8 text-center">
-          <h2 className="mb-3 text-xl font-semibold text-foreground">
-            רוצים לשמוע עוד?
+          <p className="font-medium text-foreground">
+            השיחות האלה נשארו איתנו גם הרבה אחרי:
+          </p>
+          <ul className="space-y-2 pr-4">
+            <li className="flex gap-2">
+              <span className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-terracotta-400" />
+              <span>
+                <strong className="text-foreground">הצעת עבודה</strong> - היה
+                לנו בסיס לדבר על סדרי עדיפויות.
+              </span>
+            </li>
+            <li className="flex gap-2">
+              <span className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-terracotta-400" />
+              <span>
+                <strong className="text-foreground">חיכוך</strong> - הצלחנו
+                לדבר על מה שמתחת לפני השטח במקום להיסגר.
+              </span>
+            </li>
+            <li className="flex gap-2">
+              <span className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-terracotta-400" />
+              <span>
+                <strong className="text-foreground">ארוחת שישי</strong> - הבנו
+                למה ביקור מסוים מרגיש מורכב לצד השני.
+              </span>
+            </li>
+          </ul>
+        </FadeIn>
+
+        {/* --- מהדייטים שלנו – אליכם --- */}
+        <FadeIn>
+          <div className="mx-auto mb-5 h-1 w-14 rounded-full bg-terracotta-200" />
+        </FadeIn>
+        <FadeIn>
+          <h2 className="mb-6 text-xl font-bold text-foreground md:text-2xl">
+            מהדייטים שלנו - אליכם
           </h2>
-          <p className="mb-6 text-muted-foreground">
-            מזמינה אתכם להתייעץ, לשאול שאלות או לקבל עוד פרטים על הערכה.
+        </FadeIn>
+
+        <FadeIn className="mb-14 space-y-5 leading-relaxed text-muted-foreground">
+          <p className="text-[0.95rem]">
+            יום אחד עברתי ליד הכתובה בסלון וחשבתי על חברים שטובעים בים של ספקים
+            והחלטות. אמרתי לעצמי: מה שעשינו היה כל כך משמעותי - אני חייבת לאפשר
+            את זה לזוגות אחרים.
           </p>
-          <div className="mb-6 flex flex-wrap items-center justify-center gap-4">
+
+          <div className="rounded-xl bg-terracotta-50/50 px-5 py-4">
+            <p className="mb-3 text-[0.9rem] font-medium text-foreground">מה שקראתי במחקרים חיזק בדיוק את מה שחווינו:</p>
+            <ul className="space-y-2.5">
+              <li className="flex gap-2">
+                <span className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-terracotta-400" />
+                <span>
+                  זוגות שמקדישים זמן קבוע לשיח - מתמודדים טוב יותר עם קונפליקטים.
+                </span>
+              </li>
+              <li className="flex gap-2">
+                <span className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-terracotta-400" />
+                <span>
+                  מה שבונה חיבור עמוק הוא החוויה שמישהו באמת שומע אותך.
+                </span>
+              </li>
+              <li className="flex gap-2">
+                <span className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-terracotta-400" />
+                <span>
+                  כתיבה לפני שיתוף - עוזרת לנסח דברים שקשה להגיד.
+                </span>
+              </li>
+              <li className="flex gap-2">
+                <span className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-terracotta-400" />
+                <span>
+                  שאלות ספציפיות מייצרות שיח עמוק יותר מ&quot;מה היה היום?&quot;
+                </span>
+              </li>
+            </ul>
+          </div>
+
+          <p className="text-[0.95rem]">
+            חיפשתי כלי שיאפשר לתרגם את הידע הזה למשהו שזוגות יוכלו לעשות בעצמם -
+            מובנה, פשוט, ובלי צורך באדם חיצוני. לא מצאתי. אז בניתי את זה בעצמי.
+          </p>
+        </FadeIn>
+
+        {/* --- אתם המומחים לזוגיות שלכם --- */}
+        <FadeIn>
+          <div className="mx-auto mb-5 h-1 w-14 rounded-full bg-terracotta-200" />
+        </FadeIn>
+        <FadeIn>
+          <h2 className="mb-6 text-xl font-bold text-foreground md:text-2xl">
+            אתם המומחים לזוגיות שלכם
+          </h2>
+        </FadeIn>
+
+        <FadeIn className="mb-14 space-y-5 leading-relaxed text-muted-foreground">
+          <p className="text-center text-[0.9rem] font-medium leading-relaxed text-foreground">
+            אתם בוחרים את הנושאים · אתם קובעים את הקצב · השיח הוא אישי ושלכם
+          </p>
+          <p className="rounded-lg bg-warm-gray-50 px-5 py-4 text-center font-medium text-foreground">
+            כל מה שצריך זה לפנות זמן, קשב ותשומת לב לעצמכם ולאדם היקר שהוא השותף לחייכם.
+          </p>
+        </FadeIn>
+
+        <FadeIn className="mb-6">
+          <div className="mx-auto h-1 w-14 rounded-full bg-terracotta-200" />
+        </FadeIn>
+
+        {/* CTA button */}
+        <FadeIn className="mb-10 text-center">
+          <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+            <Button size="lg" asChild>
+              <Link to="/order">להזמנת הערכה</Link>
+            </Button>
+            <Button variant="outline" size="lg" asChild>
+              <Link to="/order?flow=gift">🎁 לשלוח כמתנה</Link>
+            </Button>
+          </div>
+        </FadeIn>
+
+        {/* Contact card */}
+        <FadeIn as="section" className="rounded-2xl border border-border/60 bg-warm-gray-50 p-8 text-center">
+          <h2 className="mb-3 text-xl font-semibold text-foreground">
+            בואו נדבר
+          </h2>
+          <p className="mb-4 text-muted-foreground">
+            <strong className="text-foreground">ליהי.</strong> דוקטורנטית
+            לפסיכולוגיה ובוגרת תואר שני בפסיכולוגיה שיקומית. אוהבת שיחות מהלב.
+          </p>
+          <p className="mb-6 text-muted-foreground">
+            מזמינה אתכם להתייעץ ולהיות בקשר.
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-4">
             <a
               href="mailto:beshaatova.il@gmail.com"
               className="text-sm font-medium text-foreground underline underline-offset-4 hover:text-terracotta-600"
@@ -266,11 +189,8 @@ export default function About() {
               וואטסאפ
             </a>
           </div>
-          <Button size="lg" asChild>
-            <Link to="/order">להזמנת הערכה</Link>
-          </Button>
-        </section>
+        </FadeIn>
       </div>
-    </div>
+    </motion.div>
   );
 }

@@ -1,5 +1,9 @@
 import { useSearchParams, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { PRICES } from "@/lib/prices";
+
+const ease = [0.25, 0.1, 0.25, 1] as const;
 
 const ALL_MEETINGS = [
   { id: "02", title: "שפות האהבה" },
@@ -25,7 +29,12 @@ export default function Checkout() {
   const selectedMeetings = ALL_MEETINGS.filter((m) => selectedIds.includes(m.id));
 
   return (
-    <div className="px-6 py-16 md:py-24">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.4, ease }}
+      className="px-6 py-16 md:py-24"
+    >
       <div className="mx-auto max-w-5xl">
         <h1 className="mb-8 text-center text-3xl font-bold text-foreground md:text-4xl">
           סיכום הזמנה ותשלום
@@ -56,12 +65,12 @@ export default function Checkout() {
               <div className="mt-8 border-t border-border/60 pt-6">
                 <div className="flex items-center justify-between text-lg font-semibold">
                   <span>סך הכל לתשלום</span>
-                  <span className="text-terracotta-600">250 &#8362;</span>
+                  <span className="text-terracotta-600">{PRICES.base} &#8362;</span>
                 </div>
-                <p className="text-sm text-muted-foreground mt-1">כולל משלוח עד הבית</p>
+                <p className="text-sm text-muted-foreground mt-1">כולל חוברת זוגית, שתי חוברות אישיות ומשלוח עד הבית</p>
               </div>
               <Button size="lg" className="w-full text-lg mt-6 bg-terracotta-600 hover:bg-terracotta-700" onClick={() => { alert('זהו דף תשלום לדוגמה. בפיילוט התשלום יתבצע מול ליהי.'); navigate('/'); }}>
-                שלם עכשיו 250 &#8362;
+                שלם עכשיו {PRICES.base} &#8362;
               </Button>
             </div>
           </div>
@@ -102,6 +111,6 @@ export default function Checkout() {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

@@ -1,0 +1,6 @@
+{
+  "//": "Order ids the report always treats as tests (PLAN.md marketing_machine_2026-11 1.5). Rows whose notes contain the system-test note, or whose id contains TEST, are excluded without being listed. BT2611QH3W1J is NOT listed: whether it was a real customer is still open (PLAN.md section 7, decision 2). Add ids here once Lihi confirms them.",
+  "ids": [
+    "BT2611TEST01"
+  ]
+}

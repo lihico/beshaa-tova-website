@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { Mail, MessageCircle, Instagram, Facebook } from "lucide-react";
 
 export function Footer() {
   return (
@@ -11,7 +12,9 @@ export function Footer() {
               <img src="/logo-icon.png" alt="בשעה טובה" className="h-8 w-8" />
               <span className="text-base font-semibold text-foreground">בשעה טובה</span>
             </Link>
-            <p className="text-sm text-muted-foreground">ערכת שיח מותאמת אישית לזוגות</p>
+            <p className="max-w-[18rem] text-center text-sm leading-snug text-muted-foreground md:max-w-none md:text-right">
+              מפגשים זוגיים מותאמים אישית, לקראת החתונה ולחיים שאחריה
+            </p>
           </div>
 
           {/* Links */}
@@ -24,14 +27,34 @@ export function Footer() {
             </div>
             <div className="flex flex-col gap-2.5">
               <span className="font-medium text-foreground">צרו קשר</span>
-              <a href="mailto:beshaatova.il@gmail.com" className="text-muted-foreground transition-colors hover:text-foreground">אימייל</a>
-              <a href="https://wa.me/972502023669" target="_blank" rel="noopener noreferrer" className="text-muted-foreground transition-colors hover:text-foreground">וואטסאפ</a>
+              <div className="flex items-center gap-3">
+                <a href="mailto:beshaatova.il@gmail.com" aria-label="מייל" className="text-muted-foreground transition-colors hover:text-terracotta-600">
+                  <Mail className="h-6 w-6" />
+                </a>
+                <a href="https://wa.me/972502023669" target="_blank" rel="noopener noreferrer" aria-label="וואטסאפ" className="text-muted-foreground transition-colors hover:text-green-600">
+                  <MessageCircle className="h-6 w-6" />
+                </a>
+              </div>
             </div>
           </nav>
         </div>
 
-        <div className="mt-10 border-t border-border/60 pt-6 text-center text-xs text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} בשעה טובה. כל הזכויות שמורות.</p>
+        <div className="mt-10 border-t border-border/60 pt-6 flex flex-col items-center gap-4">
+          <div className="flex items-center gap-6">
+            <a href="https://www.instagram.com/beshaatova.il/" target="_blank" rel="noopener noreferrer" className="text-muted-foreground transition-colors hover:text-pink-500">
+              <Instagram className="h-7 w-7" />
+            </a>
+            <a href="https://www.facebook.com/profile.php?id=61576780386510" target="_blank" rel="noopener noreferrer" className="text-muted-foreground transition-colors hover:text-blue-600">
+              <Facebook className="h-7 w-7" />
+            </a>
+            <a href="https://www.mit4mit.co.il/biz/105750" target="_blank" rel="noopener noreferrer" className="transition-opacity hover:opacity-70">
+              <img src="/illustrations/mit4mit-logo.png" alt="mit4mit" className="h-9 w-auto" />
+            </a>
+          </div>
+          <p className="text-xs text-muted-foreground">&copy; {new Date().getFullYear()} בשעה טובה. כל הזכויות שמורות.</p>
+          <Link to="/terms" className="text-xs text-muted-foreground transition-colors hover:text-foreground">
+            תנאי שימוש ומדיניות פרטיות
+          </Link>
         </div>
       </div>
     </footer>

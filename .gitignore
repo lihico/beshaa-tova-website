@@ -35,3 +35,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# attribution test mode (scripts/dev-api.ts, Playwright)
+/.test-data/
+/playwright-report/
+/test-results/
+
+# local data caches (scripts/meta-insights.ts, dashboard); never committed
+/.data/

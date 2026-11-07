@@ -1,85 +1,111 @@
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-
-const palette = [
-  { bg: "bg-[#FDF8F5]", border: "border-[#F4E8E1]", badge: "bg-[#F4E8E1] text-[#8B4530]" },
-  { bg: "bg-[#FBF3EE]", border: "border-[#EDCFBF]", badge: "bg-[#EDCFBF] text-[#944B2C]" },
-  { bg: "bg-[#FAF0EA]", border: "border-[#E8C5B0]", badge: "bg-[#E8C5B0] text-[#7E3F24]" },
-  { bg: "bg-[#FCF5EF]", border: "border-[#F0D9C8]", badge: "bg-[#F0D9C8] text-[#9A5A3A]" },
-  { bg: "bg-[#FAF2ED]", border: "border-[#E5CBBA]", badge: "bg-[#E5CBBA] text-[#86452A]" },
-  { bg: "bg-[#FDF6F2]", border: "border-[#F2DDD0]", badge: "bg-[#F2DDD0] text-[#A06040]" },
-];
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { FadeIn } from "@/components/motion";
 
 const meetings = [
-  { number: 1, title: "שפות האהבה", description: "מה באמת גורם לכל אחד מכם להרגיש אהוב? (רמז: זה לא תמיד מה שחשבתם).", illustration: "/illustrations/meetings/01-love-languages.png" },
-  { number: 2, title: "איך אנחנו רבים (ואיך משלימים)", description: "על דפוסי המריבה שלכם, ומה באמת עוזר לכם לעשות \"ריסטארט\" ולחזור לקרבה.", illustration: "/illustrations/meetings/02-conflicts.png" },
-  { number: 3, title: "האינטימיות שלנו", description: "רצונות, פערים וציפיות - במרחב הכי בטוח שיש, ונטול מבוכה.", illustration: "/illustrations/meetings/03-intimacy.png" },
-  { number: 4, title: "לדבר על כסף", description: "ההרגלים שספגנו, הפחדים שמסתתרים מאחורי המספרים, ואיך בונים הסכמות כלכליות.", illustration: "/illustrations/meetings/04-money.png" },
-  { number: 5, title: "המשפחות שלנו", description: "מה לוקחים ממשפחת המקור, מה משאירים מאחור, ואיך שומרים על הגבולות של הזוגיות.", illustration: "/illustrations/meetings/05-families.png" },
-  { number: 6, title: "הבית שאנחנו בונים", description: "חלוקת אחריות, בניית שגרה, ואיך ייראה היומיום שאתם רוצים ליצור יחד.", illustration: "/illustrations/meetings/06-home.png" },
-  { number: 7, title: "עתיד וחלומות", description: "איפה אנחנו רואים את עצמנו בעוד 5, 10 או 20 שנה - ואיפה החזונות שלנו נפגשים.", illustration: "/illustrations/meetings/07-future.png" },
-  { number: 8, title: "ילדים והורות", description: "אם, מתי, איך - ומה עושים כשיש פערים בציפיות.", illustration: "/illustrations/meetings/08-children.png" },
-  { number: 9, title: "כשקשה", description: "איך מתמודדים כצוות מול משברים, שינויים לא צפויים ותקופות של עומס.", illustration: "/illustrations/meetings/09-hardtimes.png" },
-  { number: 10, title: "עבודה וקריירה", description: "שאיפות, ויתורים, איזון בית-עבודה - ומה עושים כשלצד אחד יש הזדמנות שמשנה הכל.", illustration: "/illustrations/meetings/10-career.png" },
-  { number: 11, title: "מפגש סיכום (הכתובה שלנו)", description: "אוספים את כל מה שלמדתם על עצמכם בתהליך, ומנסחים יחד את \"הכתובה האישית\" שלכם להמשך הדרך.", illustration: "/illustrations/meetings/11-ketubah.png" },
+  { title: "שפות האהבה", description: "עוצרים להבין למה לפעמים אנחנו משקיעים המון אהבה שהצד השני פשוט לא מרגיש. בודקים מה למדנו על אהבה בבית, ולומדים להראות אותה בשפה שהשני באמת מבין." },
+  { title: "איך אנחנו רבים (ואיך חוזרים)", description: "מסתכלים בכנות על ה\"לופ\" הקבוע שלנו כשאנחנו כועסים, נסגרים או נפגעים. כותבים אחד לשני \"מדריך למשתמש\" - מה באמת עוזר ומה רק מחמיר כשאנחנו באמצע חיכוך, כדי לדעת איך לחזור לקרבה." },
+  { title: "האינטימיות שלנו", description: "מניחים את המבוכה בצד ומדברים על אינטימיות במובן הרחב - מקרבה פיזית ועד לבדיחה פרטית או מבט. משתפים ב\"מנועים והבלמים\" שלנו, ולומדים לדבר בטבעיות על הפערים בצרכים ובקצב שלנו." },
+  { title: "לדבר על כסף", description: "מבינים שמאחורי כל הוצאה מסתתרים צרכים אמיתיים כמו חופש או ביטחון. משתפים ביחס לכסף שהבאנו מהבית, ומדברים בלי לשפוט על סדרי העדיפויות שמתאימים לנו יחד." },
+  { title: "עבודה וקריירה", description: "מכירים בכך שהעבודה מעצבת את הקשר ומשפיעה על מה שנכנס איתנו הביתה בסוף היום. בודקים איפה השאיפות המקצועיות שלנו נפגשות או מתנגשות, ואיך נאזן ביניהן." },
+  { title: "המשפחות שלנו", description: "מדברים בפתיחות על ההבדלים והציפיות בין המשפחות שבהן גדלנו. בונים יחד גישה משותפת לחגים, למעורבות ולגבולות לפני שמצטברים מתחים, ומבינים איך כל אחד מאיתנו שומר על הזוגיות מול משפחת המקור שלו." },
+  { title: "הבית שאנחנו בונים", description: "בודקים מה הערך שעומד מאחורי ה\"ככה ברור שצריך\" שהבאנו איתנו מהבית. בוחרים אילו מנהגים והרגלים קטנים אנחנו רוצים ליצור בעצמנו כדי שהיומיום ירגיש באמת שלנו." },
+  { title: "עתיד וחלומות", description: "מורידים את הציניות, משתיקים את ה\"איך\", ונותנים מקום לחלומות - גם הגדולים וגם השקטים - שהשגרה דוחקת הצידה. משתפים בהרפתקאות שנרצה לחוות ובונים ציר זמן משותף קדימה." },
+  { title: "ילדים והורות", description: "מנקים את רעשי הרקע של הסביבה, ומדברים על מה שאנחנו באמת מרגישים לגבי משפחה כשכל בחירה היא לגיטימית. משתפים איזה הורים נרצה להיות ואיך נשמור על הזוגיות בתוך השינוי." },
+  { title: "כשקשה", description: "מדברים על מה שעוצר אותנו מלבקש עזרה, ומגלים דרך \"הסיפור שלך מהצד שלי\" איך הצד השני חווה את הרגעים הקשים שלנו. כותבים \"מדריך למשתמש\" שמסביר למה כל אחד מאיתנו באמת זקוק כשקשה." },
+  { title: "מפגש סיכום (הכתובה שלנו)", description: "מסתכלים אחורה על התהליך שעברנו ומתרגמים את התובנות להבטחות קטנות ומעשים קונקרטיים ליומיום. מגלים שגם בלי מסמך פורמלי, אנחנו יוצאים מכאן עם שפה משותפת שלא הייתה לנו קודם.", alwaysIncluded: true },
 ];
+
+const ease = [0.25, 0.1, 0.25, 1] as const;
 
 export default function Meetings() {
   return (
-    <div className="px-6 py-16 md:py-24">
-      <div className="mx-auto max-w-4xl">
-        <div className="mb-14 text-center">
-          <h1 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.4, ease }}
+      className="px-6 py-16 md:py-24"
+    >
+      <div className="mx-auto max-w-3xl">
+        <FadeIn className="mb-12 text-center">
+          <h1 className="mb-4 text-2xl font-bold text-foreground md:text-4xl">
             אתם בוחרים את המפגשים לערכה שלכם
           </h1>
-          <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
-            כל מפגש מוקדש לנושא אחר. בחרו את מה שמדבר אליכם - אין מינימום ואין
-            מקסימום.
+          <p className="mx-auto max-w-2xl text-base text-muted-foreground md:text-lg">
+            כל מפגש מוקדש לנושא אחר. בחרו 5-8 נושאים שמדברים אליכם
+            <br />
+            (כולל מפגש סיכום/כתובה שכלול תמיד).
           </p>
-        </div>
+          <img
+            src="/illustrations/meetings-writing-1.jpg"
+            alt="יד כותבת בחוברת של בשעה טובה בבית קפה"
+            className="mx-auto mt-8 h-56 w-full max-w-md rounded-2xl object-cover shadow-md md:h-64"
+          />
+        </FadeIn>
 
-        <div className="space-y-6">
-          {meetings.map((meeting, index) => {
-            const color = palette[index % palette.length];
-            return (
-              <div
-                key={meeting.number}
-                className={`flex items-center gap-6 rounded-2xl border p-5 transition-colors md:gap-8 md:p-6 ${color.bg} ${color.border} hover:shadow-sm`}
-              >
-                <div className="relative hidden h-24 w-36 flex-shrink-0 sm:block md:h-28 md:w-44">
-                  <img
-                    src={meeting.illustration}
-                    alt={meeting.title}
-                    className="absolute inset-0 h-full w-full object-contain"
-                  />
-                </div>
-
-                <div className="flex-1">
-                  <div className="mb-1.5 flex items-center gap-3">
-                    <span
-                      className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold ${color.badge}`}
-                    >
-                      {meeting.number}
+        <FadeIn>
+          <Accordion type="multiple" className="space-y-3">
+            {meetings.map((meeting, index) => {
+              const isKetubah = "alwaysIncluded" in meeting && meeting.alwaysIncluded;
+              const number = index + 1;
+              return (
+                <AccordionItem
+                  key={meeting.title}
+                  value={`meeting-${index}`}
+                  className={`rounded-2xl border px-5 transition-colors last:border-b md:px-6 ${
+                    isKetubah
+                      ? "border-terracotta-300 bg-terracotta-50/70"
+                      : "border-[#F0D9C8] bg-[#FDF8F5]"
+                  } hover:shadow-sm`}
+                >
+                  <AccordionTrigger className="gap-3 py-4 text-right hover:no-underline sm:py-5 [&>svg]:mt-1 [&>svg]:size-5 [&>svg]:text-terracotta-400">
+                    <span className="flex items-center gap-3">
+                      <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-terracotta-100 text-sm font-bold text-terracotta-700 sm:text-base">
+                        {number}
+                      </span>
+                      <span className="text-base font-semibold text-foreground sm:text-lg">
+                        {meeting.title}
+                      </span>
+                      {isKetubah && (
+                        <span className="rounded-full bg-terracotta-200 px-2.5 py-0.5 text-xs font-medium text-terracotta-700">
+                          תמיד כלול
+                        </span>
+                      )}
                     </span>
-                    <h2 className="text-lg font-semibold text-foreground">
-                      {meeting.title}
-                    </h2>
-                  </div>
-                  <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">
-                    {meeting.description}
-                  </p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="pb-5">
+                    <p className="pr-12 text-[0.9rem] leading-relaxed text-muted-foreground sm:text-base">
+                      {meeting.description}
+                    </p>
+                  </AccordionContent>
+                </AccordionItem>
+              );
+            })}
+          </Accordion>
+        </FadeIn>
 
-        <div className="mt-14 text-center">
-          <Button size="lg" className="min-w-[200px] text-base" asChild>
-            <Link to="/order">להזמנת הערכה</Link>
-          </Button>
-        </div>
+        <FadeIn className="mt-10">
+          <div className="mx-auto h-1 w-14 rounded-full bg-terracotta-200" />
+        </FadeIn>
+
+        <FadeIn className="mt-10 text-center">
+          <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+            <Button size="lg" className="min-w-[200px] text-base" asChild>
+              <Link to="/order">להזמנת הערכה</Link>
+            </Button>
+            <Button variant="outline" size="lg" className="text-base" asChild>
+              <Link to="/order?flow=gift">🎁 הזמנת שובר מתנה</Link>
+            </Button>
+          </div>
+        </FadeIn>
       </div>
-    </div>
+    </motion.div>
   );
 }

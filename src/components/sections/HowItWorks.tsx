@@ -1,62 +1,76 @@
 import { Link } from "react-router-dom";
+import { FadeIn, Stagger, StaggerItem } from "@/components/motion";
 
-const steps = [
-  {
-    number: "1",
-    title: "ממלאים שאלון קצר",
-    illustration: "/illustrations/step-questionnaire.png",
-    description: "ממלאים פרטים ובוחרים את הנושאים שהכי מדברים אליכם.",
-    link: { href: "/order", label: "לשאלון ←" },
-  },
-  {
-    number: "2",
-    title: "מקבלים הביתה ערכה אישית",
-    illustration: "/illustrations/step-kit.png",
-    description: "ערכה אישית שמגיעה אליכם עד הבית. בתוכה תמצאו חוברת זוגית מנחה, ושתי חוברות אישיות (אחת לכל אחד מכם) - בהתאמה לנושאים שמילאתם בשאלון.",
-  },
-  {
-    number: "3",
-    title: "קובעים דייטים",
-    illustration: "/illustrations/step-talk.png",
-    description: "בקצב שלכם, בזמן שלכם. ההמלצה שלנו היא מפגש אחד בשבוע (שעה עד שעה וחצי).",
-  },
-  {
-    number: "4",
-    title: "ואם תרצו - כותבים את הכתובה שלכם",
-    illustration: "/illustrations/step-ketubah.png",
-    description: 'המפגשים עומדים בפני עצמם, אבל הם גם יכולים להוביל לניסוח "כתובה אישית" - מסמך משותף שמסכם את התובנות שלכם ומהווה מצפן להמשך הדרך.',
-  },
-];
+function StepConnector() {
+  return (
+    <div className="hidden items-center justify-center self-center lg:flex" aria-hidden="true">
+      <svg width="48" height="24" viewBox="0 0 48 24" fill="none" className="rotate-180">
+        <path d="M2 12h40m0 0-6-6m6 6-6 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-terracotta-300" />
+      </svg>
+    </div>
+  );
+}
 
 export function HowItWorks() {
   return (
-    <section id="how-it-works" className="px-6 py-20 md:py-28">
-      <div className="mx-auto max-w-6xl">
-        <h2 className="mb-14 text-center text-3xl font-bold text-foreground md:text-4xl">איך זה עובד?</h2>
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          {steps.map((step) => (
-            <div key={step.number} className="text-center">
-              {step.illustration ? (
-                <div className="relative mx-auto mb-5 h-28 w-28">
-                  <img src={step.illustration} alt={step.title} className="absolute inset-0 h-full w-full object-contain" />
+    <section id="how-it-works" className="scroll-mt-24 px-6 py-20 md:py-28">
+      <div className="mx-auto max-w-4xl">
+        <FadeIn>
+          <h2 className="mb-4 text-center text-3xl font-bold text-foreground md:text-4xl">איך זה עובד?</h2>
+          <p className="mx-auto mb-6 max-w-md text-center leading-relaxed text-muted-foreground">שלושה שלבים פשוטים - והערכה בדרך אליכם</p>
+          <img
+            src="/illustrations/divider-brush.png"
+            alt=""
+            className="mx-auto mb-14 h-3 w-48 object-contain opacity-50"
+          />
+        </FadeIn>
+
+        <Stagger className="grid items-center gap-6 lg:grid-cols-[1fr_auto_1fr_auto_1fr]">
+          <StaggerItem>
+            <div className="flex flex-col items-center text-center">
+              <div className="mb-5">
+                <div className="h-28 w-28">
+                  <img src="/illustrations/step-questionnaire.png" alt="ממלאים שאלון קצר" className="h-full w-full object-contain illustration-fade-soft" />
                 </div>
-              ) : (
-                <div className="mx-auto mb-5 flex h-28 w-28 items-center justify-center">
-                  <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" className="text-terracotta-300">
-                    <path d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
-                  </svg>
-                </div>
-              )}
-              <h3 className="mb-2.5 text-lg font-semibold text-foreground">{step.title}</h3>
-              <p className="leading-relaxed text-muted-foreground">{step.description}</p>
-              {"link" in step && step.link && (
-                <Link to={step.link.href} className="mt-3 inline-block rounded-lg border border-terracotta-400 px-4 py-2 text-sm font-medium text-terracotta-600 transition-colors hover:bg-terracotta-50">
-                  {step.link.label}
-                </Link>
-              )}
+              </div>
+              <h3 className="mb-2.5 text-lg font-semibold text-foreground">ממלאים שאלון קצר</h3>
+              <p className="max-w-[240px] leading-relaxed text-muted-foreground">מזינים שמות, בוחרים את הנושאים שהכי מדברים אליכם מתוך הבנק.</p>
             </div>
-          ))}
-        </div>
+          </StaggerItem>
+          <StepConnector />
+          <StaggerItem>
+            <div className="flex flex-col items-center text-center">
+              <div className="mb-5">
+                <div className="h-28 w-28">
+                  <img src="/illustrations/step-kit.png" alt="מקבלים ערכה עד הבית" className="h-full w-full object-contain illustration-fade-soft" />
+                </div>
+              </div>
+              <h3 className="mb-2.5 text-lg font-semibold text-foreground">מקבלים ערכה עד הבית</h3>
+              <p className="max-w-[240px] leading-relaxed text-muted-foreground">ערכה מותאמת אישית - חוברת זוגית ושתי חוברות אישיות, מותאמות אישית אליכם ולנושאים שבחרתם.</p>
+            </div>
+          </StaggerItem>
+          <StepConnector />
+          <StaggerItem>
+            <div className="flex flex-col items-center text-center">
+              <div className="mb-5">
+                <div className="h-28 w-28">
+                  <img src="/illustrations/step-talk.png" alt="מתחילים לדבר" className="h-full w-full object-contain illustration-fade-soft" />
+                </div>
+              </div>
+              <h3 className="mb-2.5 text-lg font-semibold text-foreground">מתחילים לדבר</h3>
+              <p className="max-w-[240px] leading-relaxed text-muted-foreground">מפגש אחד בשבוע, בזמן שלכם. שיחות מעמיקות שמכינות אתכם לחיים משותפים.</p>
+            </div>
+          </StaggerItem>
+        </Stagger>
+
+        <FadeIn className="mt-14 text-center">
+          <Link
+            to="/order"
+            className="inline-flex items-center gap-2 rounded-xl bg-terracotta-500 px-8 py-3.5 text-base font-semibold text-white shadow-md shadow-terracotta-300/30 transition-all duration-200 hover:bg-terracotta-600 hover:shadow-lg"
+          >
+            להזמנת הערכה
+          </Link>
+        </FadeIn>
       </div>
     </section>
   );

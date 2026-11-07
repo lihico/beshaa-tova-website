@@ -1,0 +1,32 @@
+{
+  "//": "Type-check for the client unit tests (src/lib with DOM + node types; not part of `npm run build`). Run: npx tsc -p tsconfig.client-tests.json grow-light.test.ts is here (not in tsconfig.harness.json) because it reaches api/_fulfil.ts -> api/_voucher-pdf.ts, which needs DOM types.",
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "types": [
+      "node"
+    ],
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "allowImportingTsExtensions": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    }
+  },
+  "include": [
+    "tests/unit/client-attribution.test.ts",
+    "tests/unit/grow-light.test.ts"
+  ]
+}

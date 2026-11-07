@@ -1,0 +1,37 @@
+{
+  "//": "Type-check for the attribution core, the local test harness and its tests (not part of `npm run build`). Run: npx tsc -p tsconfig.harness.json",
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": [
+      "ES2022"
+    ],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "types": [
+      "node"
+    ],
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "allowImportingTsExtensions": true
+  },
+  "include": [
+    "api/_attribution_core.ts",
+    "api/_ids.ts",
+    "api/_cookies.ts",
+    "api/_pricing.ts",
+    "api/_store.ts",
+    "scripts/**/*.ts",
+    "tests/**/*.ts",
+    "vite.config.ts"
+  ],
+  "exclude": [
+    "tests/unit/client-attribution.test.ts",
+    "tests/e2e/**/*.ts",
+    "tests/unit/grow-light.test.ts"
+  ]
+}

@@ -1,10 +1,11 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { FadeIn } from "@/components/motion";
 
 export function FinalCta() {
   return (
     <section id="order" className="bg-gradient-to-b from-terracotta-50/50 to-terracotta-50 px-6 py-20 md:py-28">
-      <div className="mx-auto max-w-2xl text-center">
+      <FadeIn className="mx-auto max-w-2xl text-center">
         <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">
           חתונה זה יום אחד.
           <br />
@@ -15,7 +16,7 @@ export function FinalCta() {
             <Link to="/order">להתחיל</Link>
           </Button>
         </div>
-      </div>
+      </FadeIn>
     </section>
   );
 }

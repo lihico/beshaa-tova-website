@@ -1,0 +1,19 @@
+{
+  "//": "Type-check for the Playwright journeys (tests/e2e, DOM + node types; not part of `npm run build`). Run: npx tsc -p tsconfig.e2e.json",
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "types": ["node"],
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "allowImportingTsExtensions": true
+  },
+  "include": ["playwright.config.ts", "tests/e2e/**/*.ts"]
+}

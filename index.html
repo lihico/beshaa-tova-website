@@ -20,6 +20,27 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Hebrew:wght@300;400;500;600;700&family=Playpen+Sans+Hebrew:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
     <noscript><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Hebrew:wght@300;400;500;600;700&family=Playpen+Sans+Hebrew:wght@400;500;600;700&display=swap" rel="stylesheet" /></noscript>
+    <!-- Consent defaults (docs/attribution/00_DESIGN.md 15): before the Pixel and gtag. CONSENT_KEY and
+         UNKNOWN_POLICY must equal src/lib/consent.ts (tests/unit/consent.test.ts checks). -->
+    <script>
+      (function(w){
+        var CONSENT_KEY = 'bsh_consent_v1';
+        var UNKNOWN_POLICY = 'granted';
+        var stored = null;
+        try {
+          var raw = w.localStorage.getItem(CONSENT_KEY);
+          if (raw === 'granted' || raw === 'denied') stored = raw;
+          else if (raw) { var p = JSON.parse(raw); if (p && (p.v === 'granted' || p.v === 'denied')) stored = p.v; }
+        } catch (e) {}
+        var state = stored || UNKNOWN_POLICY;
+        w.__bshConsent = state;
+        w.dataLayer = w.dataLayer || [];
+        w.gtag = w.gtag || function(){ w.dataLayer.push(arguments); };
+        var d = { ad_storage: state, analytics_storage: state, ad_user_data: state, ad_personalization: state };
+        if (!stored) d.wait_for_update = 500;
+        w.gtag('consent', 'default', d);
+      })(window);
+    </script>
     <!-- Facebook Pixel -->
     <script>
       !function(f,b,e,v,n,t,s)
@@ -31,6 +52,7 @@
       s.parentNode.insertBefore(t,s)}(window, document,'script',
       'https://connect.facebook.net/en_US/fbevents.js');
       fbq.disablePushState = true;
+      if (window.__bshConsent === 'denied') fbq('consent', 'revoke');
       fbq('init', '946664901627405');
     </script>
   </head>
@@ -42,9 +64,9 @@
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-W3Z965PSD0"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-W3Z965PSD0');
+      window.gtag = window.gtag || function(){dataLayer.push(arguments);};
+      window.gtag('js', new Date());
+      window.gtag('config', 'G-W3Z965PSD0');
     </script>
     <!-- Microsoft Clarity (deferred) -->
     <script>

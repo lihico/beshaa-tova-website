@@ -7,6 +7,7 @@
  */
 
 import { trackEvent, trackCustomEvent } from "./meta-pixel";
+import { readConsent } from "./consent";
 
 const LS_VISITOR = "bsh_visitor_id";
 const LS_FIRST_SEEN = "bsh_first_seen";
@@ -94,7 +95,7 @@ export interface TrackArgs {
   contentName?: string;
   contentCategory?: string;
   extra?: Record<string, unknown>;
-  /** Raw PII — server will SHA-256 hash before sending to CAPI */
+  /** Raw PII - server will SHA-256 hash before sending to CAPI */
   userData?: UserDataIn;
   /** Use this event id instead of a random one (Lead / Purchase ids come from the server). */
   eventId?: string;
@@ -132,7 +133,8 @@ export function trackFunnel(args: TrackArgs): string {
   }
 
   // 2. Server-side CAPI mirror (fire and forget)
-  if (args.mirror === false) return eventId;
+  // A visitor who chose "לא, תודה" gets no server CAPI copy either (00_DESIGN 15); the Pixel is revoked in the browser.
+  if (args.mirror === false || readConsent() === "denied") return eventId;
   fetch("/api/track", {
     method: "POST",
     headers: { "Content-Type": "application/json" },

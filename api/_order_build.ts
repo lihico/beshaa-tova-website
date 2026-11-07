@@ -28,6 +28,18 @@ function str(v: unknown, max = 500): string | null {
   return typeof v === "string" && v.trim() ? v.trim().slice(0, max) : null;
 }
 
+/** The bar's choice sent with the order (00_DESIGN 15); anything else stays "unknown". */
+export function consentOf(v: unknown): OrderRecord["consent_marketing"] {
+  return v === "granted" || v === "denied" ? v : "unknown";
+}
+
+/** A /order?debug=true order (Lihi, 7.11.2026), or any order whose notes carry the system-test note. */
+export const SYSTEM_TEST_NOTE = "בדיקת מערכת";
+export function isSystemTestBody(b: { test?: unknown; freeText?: unknown; notes?: unknown }): boolean {
+  if (b.test === true) return true;
+  return [b.freeText, b.notes].some((v) => typeof v === "string" && v.includes(SYSTEM_TEST_NOTE));
+}
+
 function landingPathOf(url: string | null): string {
   if (!url) return "/";
   try { return sanitizePath(new URL(url).pathname); } catch { return "/"; }
@@ -64,7 +76,8 @@ export function buildOrderRecord(req: VercelRequest, i: OrderBuildInput): OrderR
     visitor_id, session_id: str(b.session_id, 100),
     fbc, fbp, ga_client_id,
     client_ip: clientIp(req), user_agent: str(req.headers["user-agent"], 500), event_source_url,
-    consent_marketing: "unknown",
+    // Test orders never reach Meta: "denied" makes the Lead and Purchase senders skip them (_meta-capi.ts).
+    consent_marketing: isSystemTestBody(b) ? "denied" : consentOf(b.consent_marketing),
     buyer: i.buyer, couple: i.couple,
     lead_event_id: leadEventId(i.order_id),
     grow_process_ids: [], grow_process_token: null,

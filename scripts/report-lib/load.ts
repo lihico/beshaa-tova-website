@@ -43,6 +43,28 @@ export interface ReportData {
   excluded_tests?: Array<{ order_id: string; reason: string }>;
   /** Meta spend (scripts/meta-insights.ts cache), joined in build.ts when present. */
   meta_spend?: SpendData | null;
+  /** Sheet source: columns rowToOrder does not map, reduced to flags (no free text). Keyed by order id. */
+  order_extras?: Record<string, OrderExtras>;
+}
+
+export interface OrderExtras {
+  /** Column "נשלח ללקוח": true when it holds a tick, TRUE, כן or a date; false when FALSE / לא; null when empty or absent. */
+  kit_sent: boolean | null;
+  /** Column recon_status (Stage 3), only when it is a short code; null when absent. */
+  recon_status: string | null;
+}
+
+export const KIT_SENT_COLUMN = "נשלח ללקוח";
+
+export function orderExtras(row: SheetRow): OrderExtras {
+  const sent = s(row[KIT_SENT_COLUMN]);
+  let kit_sent: boolean | null = null;
+  if (sent) {
+    if (/^(false|לא|no|0)$/i.test(sent)) kit_sent = false;
+    else if (/^(true|כן|yes|v|x|1|נשלח)$/i.test(sent) || /\d{1,4}[./-]\d{1,2}([./-]\d{1,4})?/.test(sent) || /[\u2713\u2714\u2705]/.test(sent)) kit_sent = true;
+  }
+  const rs = s(row.recon_status);
+  return { kit_sent, recon_status: /^[a-z0-9_:-]{1,30}$/i.test(rs) ? rs : null };
 }
 
 function readLines<T>(file: string): T[] {
@@ -244,12 +266,14 @@ function rowToPayment(r: SheetRow): PaymentRecord | null {
 export function sheetDataFromRows(orderRows: SheetRow[], paymentRows: SheetRow[] | null, testIds: Set<string>): ReportData {
   const excluded: Array<{ order_id: string; reason: string }> = [];
   const orders: OrderRecord[] = [];
+  const extras: Record<string, OrderExtras> = {};
   for (const row of orderRows) {
     const id = s(row.order_id);
     if (!id) continue;                                   // legacy rows from before the BT ids
     const why = testReason(id, row["הערות"], testIds);
     if (why) { excluded.push({ order_id: id, reason: why }); continue; }
     orders.push(sheetRowToOrder(row));
+    extras[id] = orderExtras(row);
   }
   const testSet = new Set(excluded.map((e) => e.order_id));
   const payments = (paymentRows ?? []).map(rowToPayment)
@@ -265,7 +289,7 @@ export function sheetDataFromRows(orderRows: SheetRow[], paymentRows: SheetRow[]
   }
   return {
     source: "sheet", dir: ORDERS_TAB, orders, touches, payments, capi: [], codes: [], partners: [],
-    blocked_egress: null, excluded_tests: excluded,
+    blocked_egress: null, excluded_tests: excluded, order_extras: extras,
   };
 }
 

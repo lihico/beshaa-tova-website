@@ -6,6 +6,7 @@ import { Footer } from "@/components/Footer";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { StickyMobileCTA } from "@/components/StickyMobileCTA";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import { ConsentBar } from "@/components/ConsentBar";
 import { initTracking, trackPageView } from "@/lib/tracking";
 import { captureTouch, hasTrackedParams } from "@/lib/attribution";
 import Home from "@/pages/Home";
@@ -97,6 +98,7 @@ export function App() {
       <Footer />
       <WhatsAppButton />
       <StickyMobileCTA />
+      <ConsentBar />
     </>
   );
 }

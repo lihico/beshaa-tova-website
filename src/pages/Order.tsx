@@ -13,6 +13,7 @@ import { getCafe } from "@/data/cafes";
 import { captureAttribution, getAttribution, getAttributionState, getGaClientId } from "@/lib/attribution";
 import { type OrderResponse, readOrderResponse, isPaymentUrl, goToPayment, rememberOrder } from "@/lib/payment";
 import { NEW_PRICES, PRICES, quoteNow } from "@/lib/prices";
+import { consentForOrder } from "@/lib/consent";
 import { FRIEND_CODES_10PCT } from "../../api/_friend_codes_10pct";
 
 const ease = [0.25, 0.1, 0.25, 1] as const;
@@ -138,7 +139,7 @@ export default function Order() {
   const promoParam = searchParams.get("promo") || "";
   const hasPromoParam = !!getPromo(promoParam);
   const initialFlow = isVoucherRedeem ? "self" : isCafePickup ? "self" : hasPromoParam ? "self" : searchParams.get("flow") === "gift" ? "gift" : null;
-  const [flowChoice, setFlowChoice] = useState<"self" | "gift" | null>(initialFlow);
+  const [flowChoice, setFlowChoice] = useState<"self" | "gift" | null>(initialFlow ?? (debug ? "self" : null));
 
   useEffect(() => {
     // ViewContent - mirror to CAPI via trackFunnel so we get deduped + adblock-resistant data.
@@ -166,15 +167,15 @@ export default function Order() {
   const [selectedMeetings, setSelectedMeetings] = useState<string[]>(debug ? ["02", "03", "05", "07", "08", "09"] : DEFAULT_SELECTION);
   const [allMeetings, setAllMeetings] = useState(false);
   const [express, setExpress] = useState(false);
-  const [freeText, setFreeText] = useState("");
-  const [showFreeText, setShowFreeText] = useState(false);
+  const [freeText, setFreeText] = useState(debug ? "בדיקת מערכת (debug)" : "");
+  const [showFreeText, setShowFreeText] = useState(debug);
   const [modestLanguage, setModestLanguage] = useState(false);
   const [shabbat, setShabbat] = useState(false);
   const [postWedding, setPostWedding] = useState(false);
   // Always send a receipt by email; no checkbox (Lihi, 4.11.2026).
   const wantReceipt = true;
   const [notEngaged, setNotEngaged] = useState(false);
-  const [referralSource, setReferralSource] = useState(cafePartner ? "cafe" : "");
+  const [referralSource, setReferralSource] = useState(cafePartner ? "cafe" : debug ? "instagram" : "");
   const [referralOther, setReferralOther] = useState(cafePartner ? cafePartner.name : "");
   const [voucherCode, setVoucherCode] = useState(voucherParam || (hasPromoParam ? promoParam : ""));
   const [attribution] = useState(() => { captureAttribution(searchParams.toString()); return getAttribution(); });
@@ -185,24 +186,24 @@ export default function Order() {
   const [orderResult, setOrderResult] = useState<OrderResponse | null>(null);
   const [expandedMeeting, setExpandedMeeting] = useState<string | null>(null);
 
-  const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(debug);
 
   // Gift flow state
-  const [giverName, setGiverName] = useState("");
-  const [giverPhone, setGiverPhone] = useState("");
-  const [giverEmail, setGiverEmail] = useState("");
-  const [coupleName1Gift, setCoupleName1Gift] = useState("");
-  const [coupleName2Gift, setCoupleName2Gift] = useState("");
+  const [giverName, setGiverName] = useState(debug ? "דנה בדיקה" : "");
+  const [giverPhone, setGiverPhone] = useState(debug ? "050-7654321" : "");
+  const [giverEmail, setGiverEmail] = useState(debug ? "test@example.com" : "");
+  const [coupleName1Gift, setCoupleName1Gift] = useState(debug ? "נועה" : "");
+  const [coupleName2Gift, setCoupleName2Gift] = useState(debug ? "איתי" : "");
   const [giftWeddingDate, setGiftWeddingDate] = useState("");
-  const [noDateYet, setNoDateYet] = useState(false);
+  const [noDateYet, setNoDateYet] = useState(debug);
   const [blessing, setBlessing] = useState("");
   const [giftDelivery, setGiftDelivery] = useState<"self" | "direct">("self");
   const [couplePhone, setCouplePhone] = useState("");
   const [coupleContactName, setCoupleContactName] = useState("");
   const [giftPostWedding, setGiftPostWedding] = useState(false);
-  const [giftNotes, setGiftNotes] = useState("");
-  const [showGiftNotes, setShowGiftNotes] = useState(false);
-  const [giftAgreedToTerms, setGiftAgreedToTerms] = useState(false);
+  const [giftNotes, setGiftNotes] = useState(debug ? "בדיקת מערכת (debug)" : "");
+  const [showGiftNotes, setShowGiftNotes] = useState(debug);
+  const [giftAgreedToTerms, setGiftAgreedToTerms] = useState(debug);
   const [giftAll, setGiftAll] = useState(false);
   const [giftError, setGiftError] = useState("");
   const [giftReview, setGiftReview] = useState(false);
@@ -362,6 +363,7 @@ export default function Order() {
         shabbat: modestLanguage && shabbat,
         postWedding,
         freeText: freeText.trim() || null,
+        test: debug || undefined,
         referralSource: referralSource ? (referralSource === "other" ? referralOther.trim() || "אחר" : referralSource === "cafe" ? `בית קפה - ${referralOther}` : referralSource) : null,
         voucherCode: isPromoCode ? null : (voucherCode.trim() || null),
         isVoucherRedeem,
@@ -379,6 +381,7 @@ export default function Order() {
         visitor_id: getVisitorId(),
         session_id: getSessionId(),
         event_source_url: typeof location !== "undefined" ? location.href : undefined,
+        consent_marketing: consentForOrder(),
       }),
     }).catch(() => null);
 
@@ -463,6 +466,7 @@ export default function Order() {
         couplePhone: giftDelivery === "direct" ? couplePhone.trim() : null,
         postWedding: giftPostWedding,
         notes: giftNotes.trim() || null,
+        test: debug || undefined,
         giftAllMeetings: giftAll && PRICES.gift.all !== null,
         wantReceipt,
         ref: attribution.ref || null,
@@ -477,6 +481,7 @@ export default function Order() {
         visitor_id: getVisitorId(),
         session_id: getSessionId(),
         event_source_url: typeof location !== "undefined" ? location.href : undefined,
+        consent_marketing: consentForOrder(),
       }),
     }).catch(() => null);
 
@@ -935,6 +940,11 @@ export default function Order() {
       transition={{ duration: 0.4, ease }}
       className="px-6 py-8 md:py-12"
     >
+      {debug && (
+        <div className="mb-3 rounded-md border border-amber-300 bg-amber-50 px-3 py-1.5 text-center text-xs text-amber-900" data-testid="debug-banner">
+          מצב בדיקה: הטופס מולא אוטומטית, ההזמנה תסומן "בדיקת מערכת" ולא תישלח למטא
+        </div>
+      )}
       <div className="mx-auto max-w-xl">
         {isCafePickup ? (
           <div className="mb-8 text-center">

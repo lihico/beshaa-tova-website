@@ -361,7 +361,7 @@ describe("load: --source sheet (read only, tests excluded)", () => {
     assert.equal(testReason("bt2611bbbb03", "", ids), "test_orders.json");
     assert.equal(testReason("BT2611QH3W1J", "", ids), null);
     assert.ok(loadTestIds().has("BT2611TEST01"));
-    assert.ok(!loadTestIds().has("BT2611QH3W1J"));                  // still an open question (PLAN 7.2)
+    assert.ok(loadTestIds().has("BT2611QH3W1J"));                   // Lihi confirmed a test on 7.11.2026 (decision B)
   });
   test("rows -> orders: tests and id-less rows dropped, payments of tests dropped, touches from touches_json or ft_/lt_", () => {
     const d = sheetDataFromRows(rows, payments, ids);

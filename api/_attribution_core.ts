@@ -102,6 +102,16 @@ export interface OrderRecord {
   /** CAPI Lead result (ok:<n> | logged | off | skipped_consent | error:<status>), when it went out, and the
    *  last Graph error code of any CAPI send ("<code>" or "<code>:<subcode>", "fetch" = network). PLAN.md Stage 2. */
   capi_lead_result?: string | null; capi_lead_sent_at?: string | null; capi_last_error_code?: string | null;
+  /** GA4 session id from the _ga_W3Z965PSD0 cookie at submit (digits, PLAN.md Stage 6); the server-side
+   *  GA4 purchase carries it as session_id so the sale joins the visit's session and traffic source. */
+  ga_session_id?: string | null;
+  /** Money truth (PLAN.md Stage 3), written only by scripts/reconcile-payments.ts --apply: when Grow says it was
+   *  paid, ex-VAT revenue after refunds minus the Grow fee, the Grow fee, the refunded total (ILS, gross), when the
+   *  last refund happened, the Grow credit document number, and the reconciliation verdict, where it came from
+   *  and when it ran. */
+  grow_paid_at?: string | null; revenue_net_ils?: number | null; fee_ils?: number | null;
+  refund_amount?: number | null; refunded_at?: string | null; credit_doc_number?: string | null;
+  recon_status?: string | null; recon_source?: string | null; recon_at?: string | null;
   // Optional extras (slice 3-5): what fulfilPaid() needs that the 3.2 shape does not carry.
   meetings?: string[] | null;            // content_ids / num_items for the Purchase event
   all_meetings?: boolean;                // Grow catalogNumber kit | kit_all
@@ -708,7 +718,7 @@ export function decodeAttCookie(value: string | null | undefined): Pick<Attribut
 }
 
 // ---------------------------------------------------------------------------------------------
-// Sheet columns (section 3.6): the 71 new headers plus 3 CAPI Lead columns (Stage 2), in order, plus the 5 existing tracking columns
+// Sheet columns (section 3.6): the 71 new headers plus 3 CAPI Lead columns (Stage 2), ga_session_id (Stage 6) and 9 reconciliation columns (Stage 3), in order, plus the 5 existing tracking columns
 // ---------------------------------------------------------------------------------------------
 
 export const SHEET_ATTRIBUTION_HEADERS = [
@@ -726,6 +736,11 @@ export const SHEET_ATTRIBUTION_HEADERS = [
   "capi_purchase_event_id", "capi_purchase_sent_at", "capi_purchase_result", "commission_ils", "commission_status",
   // Appended 2026-11 (PLAN.md Stage 2), at the end so the earlier column order is unchanged.
   "capi_lead_result", "capi_lead_sent_at", "capi_last_error_code",
+  // Appended 2026-11 (PLAN.md Stage 6, GA4), at the end.
+  "ga_session_id",
+  // Appended 2026-11 (PLAN.md Stage 3, reconciliation and refunds), at the end.
+  "grow_paid_at", "revenue_net_ils", "fee_ils", "refund_amount", "refunded_at", "credit_doc_number",
+  "recon_status", "recon_source", "recon_at",
 ] as const;
 
 /** Existing live columns (57-61) that the code writes for gift rows too from now on. */
@@ -783,6 +798,10 @@ export function toSheetColumns(o: OrderRecord): Record<SheetColumn, string> {
     capi_purchase_event_id: o.capi_purchase_event_id, capi_purchase_sent_at: o.capi_purchase_sent_at,
     capi_purchase_result: o.capi_purchase_result, commission_ils: o.commission_ils, commission_status: o.commission_status,
     capi_lead_result: o.capi_lead_result, capi_lead_sent_at: o.capi_lead_sent_at, capi_last_error_code: o.capi_last_error_code,
+    ga_session_id: o.ga_session_id,
+    grow_paid_at: o.grow_paid_at, revenue_net_ils: o.revenue_net_ils, fee_ils: o.fee_ils,
+    refund_amount: o.refund_amount, refunded_at: o.refunded_at, credit_doc_number: o.credit_doc_number,
+    recon_status: o.recon_status, recon_source: o.recon_source, recon_at: o.recon_at,
     fbc: o.fbc, fbp: o.fbp, event_id: o.lead_event_id, visitor_id: o.visitor_id, session_id: o.session_id,
   };
   const out = {} as Record<SheetColumn, string>;
@@ -820,6 +839,33 @@ export function parseGaClientId(cookieValue: unknown): string | null {
   if (typeof cookieValue !== "string") return null;
   const m = /^GA\d\.\d+\.(\d+\.\d+)$/.exec(cookieValue.trim());
   return m ? m[1] : null;
+}
+
+/** The GA4 stream cookie that carries the session id (measurement id G-W3Z965PSD0). */
+export const GA_SESSION_COOKIE = "_ga_W3Z965PSD0";
+
+/** A GA4 session id: the session start in Unix seconds, digits only (PLAN.md Stage 6). */
+export function isGaSessionId(v: unknown): v is string {
+  return typeof v === "string" && /^\d{6,12}$/.test(v);
+}
+
+/**
+ * Session id from the `_ga_<stream>` cookie, in either form:
+ *   GS1: "GS1.1.1730000000.5.1.1730000100.0.0.0"  (the third field)
+ *   GS2: "GS2.1.s1730000000$o5$g1$t1730000100$j0$l0$h0"  (the `s` field)
+ * Anything else, or a value that is not 6-12 digits, is null.
+ */
+export function parseGaSessionId(cookieValue: unknown): string | null {
+  if (typeof cookieValue !== "string") return null;
+  const v = cookieValue.trim();
+  let id: string | undefined;
+  const gs1 = /^GS1\.\d+\.(\d+)(?:\.|$)/.exec(v);
+  if (gs1) id = gs1[1];
+  else {
+    const gs2 = /^GS2\.\d+\.(.+)$/.exec(v);
+    if (gs2) id = gs2[1].split("$").find((p) => /^s\d+$/.test(p))?.slice(1);
+  }
+  return isGaSessionId(id) ? id : null;
 }
 
 /** Meta fbc format: fb.1.<creation ms>.<fbclid>. */

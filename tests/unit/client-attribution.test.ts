@@ -110,6 +110,45 @@ describe("captureTouch", () => {
     assert.equal(attr.hasTrackedParams("?preview=conversion&flow=gift"), false);
     assert.equal(attr.getGaClientId(), "111.222");
   });
+
+  test("getGaSessionId reads _ga_W3Z965PSD0 in GS1 and GS2 form (PLAN Stage 6)", () => {
+    const doc = globalThis.document as unknown as { cookie: string };
+    const before = doc.cookie;
+    doc.cookie = "_ga=GA1.1.111.222; _ga_W3Z965PSD0=GS2.1.s1762500000$o3$g1$t1762500100$j0$l0$h0";
+    assert.equal(attr.getGaSessionId(), "1762500000");
+    doc.cookie = "_ga_W3Z965PSD0=GS1.1.1730000000.5.1.1730000100.0.0.0; x=1";
+    assert.equal(attr.getGaSessionId(), "1730000000");
+    doc.cookie = "_ga_OTHER=GS1.1.1730000000.5.1; _ga_W3Z965PSD0=junk";
+    assert.equal(attr.getGaSessionId(), null);
+    doc.cookie = "_ga=GA1.1.111.222";
+    assert.equal(attr.getGaSessionId(), null);
+    doc.cookie = before;
+  });
+});
+
+describe("GA4 user property bsh_vid (PLAN Stage 6)", () => {
+  test("initTracking sets user_properties.bsh_vid once per id, and not on denied consent", async () => {
+    const tracking = await import("../../src/lib/tracking.ts");
+    const consent = await import("../../src/lib/consent.ts");
+    const gtagCalls: unknown[][] = [];
+    g.gtag = (...a: unknown[]) => { gtagCalls.push(a); };
+    try {
+      (g.localStorage as MemStorage).setItem(consent.CONSENT_KEY, JSON.stringify({ v: "denied", t: 1 }));
+      (g.localStorage as MemStorage).setItem("bsh_visitor_id", "v_AAAAAAAAAAAAAAAAAAAAAA");
+      tracking.initTracking();
+      assert.equal(gtagCalls.filter((c) => c[0] === "set").length, 0, "nothing on denied");
+      (g.localStorage as MemStorage).removeItem(consent.CONSENT_KEY);
+      tracking.initTracking();
+      tracking.setGaVisitorProperty();
+      const sets = gtagCalls.filter((c) => c[0] === "set");
+      assert.deepEqual(sets, [["set", "user_properties", { bsh_vid: "v_AAAAAAAAAAAAAAAAAAAAAA" }]]);
+      (g.localStorage as MemStorage).setItem("bsh_visitor_id", "v_BBBBBBBBBBBBBBBBBBBBBB");
+      tracking.setGaVisitorProperty();
+      assert.equal(gtagCalls.filter((c) => c[0] === "set").length, 2, "a new id is sent again");
+    } finally {
+      delete g.gtag;
+    }
+  });
 });
 
 describe("payment helpers", () => {

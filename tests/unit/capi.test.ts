@@ -203,7 +203,10 @@ describe("Lead result on the order (sendLeadRecorded)", () => {
 describe("sheet columns", () => {
   test("the 3 Lead columns are appended at the end, after the old last column", () => {
     const h = [...SHEET_ATTRIBUTION_HEADERS];
-    assert.deepEqual(h.slice(-4), ["commission_status", "capi_lead_result", "capi_lead_sent_at", "capi_last_error_code"]);
+    // Stage 6 appended ga_session_id after them and Stage 3 the 9 reconciliation columns; the Stage 2 block keeps its place.
+    const at = h.indexOf("commission_status");
+    assert.deepEqual(h.slice(at, at + 5), ["commission_status", "capi_lead_result", "capi_lead_sent_at", "capi_last_error_code", "ga_session_id"]);
+    assert.equal(h.length, at + 5 + 9);
     const cols = toSheetColumns(order({ capi_lead_result: "ok:1", capi_lead_sent_at: "2026-11-06T10:00:00Z", capi_last_error_code: "190" }));
     assert.equal(cols.capi_lead_result, "ok:1");
     assert.equal(cols.capi_last_error_code, "190");

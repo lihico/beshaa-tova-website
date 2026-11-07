@@ -5,10 +5,10 @@
  */
 import type { VercelRequest } from "@vercel/node";
 import {
-  creditOrder, fbcClickId, israeliMobileE164Digits, isVisitorId, legacyState, mergeServerAttribution, parseGaClientId, sanitizePath, sanitizeValue,
+  creditOrder, fbcClickId, israeliMobileE164Digits, isGaSessionId, isVisitorId, legacyState, mergeServerAttribution, parseGaClientId, parseGaSessionId, sanitizePath, sanitizeValue,
   type OrderKind, type OrderRecord, type ResolvedPromo,
 } from "./_attribution_core.js";
-import { COOKIE_FBP, readAttCookie, readCookie, readFbc, readGaClientCookie, readVisitorCookie } from "./_cookies.js";
+import { COOKIE_FBP, readAttCookie, readCookie, readFbc, readGaClientCookie, readGaSessionCookie, readVisitorCookie } from "./_cookies.js";
 import { leadEventId, newVisitorId } from "./_ids.js";
 import { MANUAL_LINK_REASON, preflightReason } from "./_checkout.js";
 import { clientIp } from "./_store.js";
@@ -45,6 +45,16 @@ function landingPathOf(url: string | null): string {
   try { return sanitizePath(new URL(url).pathname); } catch { return "/"; }
 }
 
+/**
+ * GA4 session id (PLAN.md Stage 6): the body value when it is 6-12 digits (the browser parsed the
+ * cookie), else the raw cookie value in the body or on the request, parsed (GS1 or GS2), else null.
+ */
+export function gaSessionIdOf(req: Parameters<typeof readGaSessionCookie>[0], bodyValue: unknown): string | null {
+  const v = str(bodyValue, 200);
+  if (isGaSessionId(v)) return v;
+  return parseGaSessionId(v) ?? parseGaSessionId(readGaSessionCookie(req));
+}
+
 export function buildOrderRecord(req: VercelRequest, i: OrderBuildInput): OrderRecord {
   const b = i.body;
   const event_source_url = str(b.event_source_url, 500);
@@ -61,6 +71,7 @@ export function buildOrderRecord(req: VercelRequest, i: OrderBuildInput): OrderR
   const fbp = bodyFbp && /^fb\.\d\.\d+\.\d+$/.test(bodyFbp) ? bodyFbp : (readCookie(req, COOKIE_FBP) || null);
   const gaBody = str(b.ga_client_id, 100);
   const ga_client_id = gaBody && /^\d+\.\d+$/.test(gaBody) ? gaBody : parseGaClientId(gaBody) ?? parseGaClientId(readGaClientCookie(req));
+  const ga_session_id = gaSessionIdOf(req, b.ga_session_id);
   const shown = Number(b.clientDisplayedAmount);
 
   const record: OrderRecord = {
@@ -74,7 +85,7 @@ export function buildOrderRecord(req: VercelRequest, i: OrderBuildInput): OrderR
     first: attr.first, last: attr.last, touches: attr.touches,
     self_reported_source: str(b.referralSource, 100), not_engaged: b.notEngaged === true,
     visitor_id, session_id: str(b.session_id, 100),
-    fbc, fbp, ga_client_id,
+    fbc, fbp, ga_client_id, ga_session_id,
     client_ip: clientIp(req), user_agent: str(req.headers["user-agent"], 500), event_source_url,
     // Test orders never reach Meta: "denied" makes the Lead and Purchase senders skip them (_meta-capi.ts).
     consent_marketing: isSystemTestBody(b) ? "denied" : consentOf(b.consent_marketing),

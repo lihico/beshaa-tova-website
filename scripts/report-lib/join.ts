@@ -1,7 +1,7 @@
 /**
  * Spend join and CAC (PLAN.md marketing_machine_2026-11, Stage 1 item 1.6). Pure: no fs, no network.
  *
- * Credit: the last touch (the lt_meta_* columns) of every paid order, not refunded, not a test (the
+ * Credit: the last touch (the lt_meta_* columns) of every paid order, not fully refunded, not a test (the
  * loader already drops tests), with paid_at inside the window. The first touch (ft_) is shown next to
  * it as `paid_ft`, never used for CAC.
  *
@@ -17,6 +17,7 @@
  * Ad set and campaign spend are sums of the ad rows; reach is not summed (it is not additive).
  */
 import type { OrderRecord, Touch } from "../../api/_attribution_core.ts";
+import { isRefunded, netRevenueOf } from "./recon.ts";
 
 export interface MetaAction { action_type: string; value: string | number }
 
@@ -259,7 +260,8 @@ const node = (id: string, name: string | null): CacNode => ({
   cac: null, cac_label: null, roas_ex_vat: null, order_ids: [],
 });
 
-const paidAmount = (o: OrderRecord) => Number(o.paid_amount ?? o.amount_expected) || 0;
+/** Revenue for ROAS: paid_amount - refund_amount (PLAN.md Stage 3). */
+const paidAmount = (o: OrderRecord) => netRevenueOf(o);
 
 export function joinSpend(orders: OrderRecord[], spend: SpendData, window: { from?: string | null; to?: string | null } = {}): MetaCac {
   const w = { from: window.from ?? null, to: window.to ?? null };
@@ -312,7 +314,7 @@ export function joinSpend(orders: OrderRecord[], spend: SpendData, window: { fro
   const unknown = { label: UNKNOWN_LABEL, paid: 0, revenue: 0, order_ids: [] as string[] };
   const matches: MetaCac["matches"] = { id: 0, ref: 0, utm_campaign: 0, unknown: 0 };
   for (const o of orders) {
-    if (o.payment_status !== "paid") continue;                       // refunded / cancelled / pending / free are out
+    if (o.payment_status !== "paid" || isRefunded(o)) continue;      // refunded / cancelled / pending / free are out of CAC and ROAS
     if (!inRange(israelDay(o.paid_at || o.created_at), w)) continue;
     const amt = paidAmount(o);
     const credited = resolveTouch(o.last, L);

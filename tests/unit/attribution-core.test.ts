@@ -407,8 +407,8 @@ describe("toSheetColumns", () => {
     commission_ils: null, commission_status: null, invoice_number: null, invoice_url: null,
   } as const;
   const cols = toSheetColumns(order as unknown as Parameters<typeof toSheetColumns>[0]);
-  test("74 new headers (71 + 3 CAPI result columns) + 5 existing tracking columns, every value a string", () => {
-    assert.equal(SHEET_ATTRIBUTION_HEADERS.length, 74);
+  test("84 new headers (71 + 3 CAPI result columns + ga_session_id + 9 reconciliation columns) + 5 existing tracking columns, every value a string", () => {
+    assert.equal(SHEET_ATTRIBUTION_HEADERS.length, 84);
     assert.deepEqual(Object.keys(cols).sort(), [...SHEET_ATTRIBUTION_HEADERS, ...SHEET_EXISTING_TRACKING_HEADERS].sort());
     for (const v of Object.values(cols)) assert.equal(typeof v, "string");
   });

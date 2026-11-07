@@ -175,9 +175,29 @@ export function trackPageView(path: string) {
   trackFunnel({ event: "PageView", contentName: path });
 }
 
+/**
+ * GA4 user property bsh_vid = our visitor id, so GA4 users join orders and touches (PLAN.md Stage 6,
+ * decision 19). Skipped on "לא, תודה"; sent again only when the id changes (the server's v_ id
+ * replaces the first-visit local one once /api/touch answers).
+ */
+let gaVidSent: string | null = null;
+export function setGaVisitorProperty(): void {
+  try {
+    const w = globalThis as unknown as { gtag?: (...args: unknown[]) => void };
+    if (typeof w.gtag !== "function" || readConsent() === "denied") return;
+    const vid = getVisitorId();
+    if (!vid || vid === "anon" || vid === gaVidSent) return;
+    w.gtag("set", "user_properties", { bsh_vid: vid });
+    gaVidSent = vid;
+  } catch {
+    // best effort
+  }
+}
+
 /** Run once at app boot. Idempotent. */
 export function initTracking() {
   if (typeof window === "undefined") return;
   getVisitorId();  // ensures one is generated on first visit
   getSessionId();
+  setGaVisitorProperty();
 }

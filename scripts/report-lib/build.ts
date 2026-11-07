@@ -6,6 +6,9 @@
 import { selfReportChannel, type Channel, type OrderRecord, type Touch } from "../../api/_attribution_core.ts";
 import type { ReportData } from "./load.ts";
 import { joinSpend, type MetaCac } from "./join.ts";
+import { isRefunded, netRevenueOf } from "./recon.ts";
+
+export { isRefunded, refundOf } from "./recon.ts";
 
 export type Model = "credited" | "first" | "last";
 
@@ -29,7 +32,8 @@ export function israelDate(iso: string | null | undefined): string {
 }
 
 export const isPaid = (o: OrderRecord): boolean => o.payment_status === "paid";
-export const revenueOf = (o: OrderRecord): number => (isPaid(o) ? Number(o.paid_amount ?? o.amount_expected) || 0 : 0);
+/** PLAN.md Stage 3: revenue = paid_amount - refund_amount (a partial refund is lower revenue; a full refund is 0). */
+export const revenueOf = (o: OrderRecord): number => netRevenueOf(o);
 const commissionOf = (o: OrderRecord): number =>
   o.commission_status && o.commission_status !== "void" ? Number(o.commission_ils) || 0 : 0;
 
@@ -87,7 +91,7 @@ function summary(orders: OrderRecord[], now: Date): Summary {
     revenue: paid.reduce((s, o) => s + revenueOf(o), 0),
     free_redemptions: orders.filter((o) => o.payment_status === "free").length,
     cancelled: orders.filter((o) => o.payment_status === "cancelled").length,
-    refunded: orders.filter((o) => o.payment_status === "refunded").length,
+    refunded: orders.filter(isRefunded).length,
     pending: orders.filter((o) => o.payment_status === "pending").length,
     pending_over_48h: orders
       .filter((o) => o.payment_status === "pending" && now.getTime() - Date.parse(o.created_at) > H48)

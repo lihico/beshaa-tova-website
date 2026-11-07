@@ -12,7 +12,9 @@
     "test:unit": "tsx --test tests/unit/*.test.ts",
     "typecheck:harness": "tsc -p tsconfig.harness.json && tsc -p tsconfig.client-tests.json && tsc -p tsconfig.e2e.json",
     "test:e2e": "playwright test",
-    "report:attr": "tsx scripts/attribution-report.ts"
+    "report:attr": "tsx scripts/attribution-report.ts",
+    "report:ga4": "tsx scripts/ga4-report.ts",
+    "recon:payments": "tsx scripts/reconcile-payments.ts"
   },
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.3.3",

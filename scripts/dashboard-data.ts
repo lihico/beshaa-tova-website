@@ -31,6 +31,7 @@ import { loadSpend } from "./attribution-report.ts";
 import { costRow, meetingsOf } from "./cogs-sync.ts";
 import { adsetVerdicts, cpaInterval, paidVerdict, PRIOR_COST, type AdStats, type CpaSummary, type Proxy, type Verdict, DEFAULT_SEED } from "./report-lib/bayes.ts";
 import { buildReport, isPaid, israelDate, modelTouch, revenueOf, type Model, type Report } from "./report-lib/build.ts";
+import { RECON_OK, isRefunded, refundOf } from "./report-lib/recon.ts";
 import { actionValue, buildLookup, isMetaTouch, joinSpend, resolveTouch, type InsightRow, type MetaCac, type SpendData } from "./report-lib/join.ts";
 import { DEFAULT_META_ENV, DEFAULT_REPORT_ENV, envFileModeWarning, loadReportData, loadSheetData, type ReportData } from "./report-lib/load.ts";
 
@@ -374,8 +375,9 @@ export function buildDashboard(data: ReportData, opts: DashboardOptions): Dashbo
 
     // Money footer
     const gross = round2(rep.summary.revenue);
-    const refundedOrders = winOrders.filter((o) => o.payment_status === "refunded");
-    const refunds = round2(refundedOrders.reduce((s, o) => s + (Number(o.paid_amount ?? o.amount_expected) || 0), 0));
+    // Refunds (Stage 3): the refund_amount column when set, else the whole amount of an order marked refunded.
+    const refundedOrders = winOrders.filter(isRefunded);
+    const refunds = round2(winOrders.reduce((s, o) => s + (refundOf(o) || (o.payment_status === "refunded" ? Number(o.paid_amount ?? o.amount_expected) || 0 : 0)), 0));
     (money as Record<WindowKey, unknown>)[key] = {
       gross, vat: round2(gross - revEx), net: revEx, fees: feesOf(paidIds), refunds, refunded_orders: refundedOrders.length,
       cogs, spend: spendTotal, contribution: round2(revEx - cogs - (spendTotal ?? 0)), fixed_monthly: FIXED_MONTHLY_ILS.total,
@@ -415,7 +417,7 @@ export function buildDashboard(data: ReportData, opts: DashboardOptions): Dashbo
         lead: safeCode(o.capi_lead_result), lead_at: safeTs(o.capi_lead_sent_at),
         purchase: safeCode(o.capi_purchase_result), purchase_at: safeTs(o.capi_purchase_sent_at), last_error: safeCode(o.capi_last_error_code),
       },
-      recon_status: extras[o.order_id]?.recon_status ?? null,
+      recon_status: reconStatusOf(o, extras),
       kit_sent: extras[o.order_id]?.kit_sent ?? null,
       cogs: c ? Number(c.cogs_ils) : null, contribution_before_ads: c ? Number(c.contribution_ils) : null,
     };
@@ -571,6 +573,12 @@ function buildDrill(x: DrillCtx): DrillNode[] {
   return out;
 }
 
+/** The order's recon_status (the OrderRecord field, else the loader's extras), only as a short code. */
+function reconStatusOf(o: OrderRecord, extras: NonNullable<ReportData["order_extras"]>): string | null {
+  const v = o.recon_status ?? extras[o.order_id]?.recon_status ?? null;
+  return v && /^[a-z0-9_:-]{1,30}$/i.test(v) ? v : null;
+}
+
 function buildHealth(data: ReportData, rep: Report, join: MetaCac | null, spend: SpendData | null, extras: NonNullable<ReportData["order_extras"]>, opts: DashboardOptions, now: Date): HealthItem[] {
   const paid = data.orders.filter(isPaid);
   const item = (key: string, ids: string[] | null, note: string | null = null): HealthItem =>
@@ -580,8 +588,13 @@ function buildHealth(data: ReportData, rep: Report, join: MetaCac | null, spend:
   const unknownAd = join
     ? join.unknown.order_ids
     : paid.filter((o) => (isMetaTouch(o.last) || o.credited_channel === "paid_meta") && !o.last?.meta_ad_id && !/^meta-\d+$/i.test(o.last?.ref ?? "")).map((o) => o.order_id);
-  const withRecon = data.orders.filter((o) => extras[o.order_id]?.recon_status);
-  const recon = withRecon.length ? withRecon.filter((o) => extras[o.order_id]?.recon_status !== "matched").map((o) => o.order_id) : null;
+  // recon_status (Stage 3, scripts/reconcile-payments.ts): red for every status that needs action; the note
+  // counts the statuses (e.g. "amount_mismatch:1,not_in_export:2"). Unknown until the column holds a value.
+  const withRecon = data.orders.filter((o) => reconStatusOf(o, extras));
+  const recon = withRecon.length ? withRecon.filter((o) => !RECON_OK.has(reconStatusOf(o, extras) as string)).map((o) => o.order_id) : null;
+  const reconCounts = new Map<string, number>();
+  for (const o of withRecon) { const st = reconStatusOf(o, extras) as string; reconCounts.set(st, (reconCounts.get(st) ?? 0) + 1); }
+  const reconNote = [...reconCounts.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([k, v]) => `${k}:${v}`).join(",") || null;
 
   let token: HealthItem;
   if (opts.tokenExpiresAt) {
@@ -603,7 +616,7 @@ function buildHealth(data: ReportData, rep: Report, join: MetaCac | null, spend:
     item("paid_no_touch", rep.health.paid_no_touch),
     item("pending_over_48h", rep.summary.pending_over_48h),
     item("meta_unknown_ad", unknownAd, join ? null : "no_spend_ids_only"),
-    item("recon_not_matched", recon, recon === null ? "no_recon_column" : null),
+    item("recon_not_matched", recon, recon === null ? "no_recon_column" : reconNote),
     token,
     stale,
   ];

@@ -1,7 +1,7 @@
 {
-  "_note": "Header row of tab 0 (מעקב הזמנות) as FileStore must filter rows through it: the 62 live headers read 2026-10-30 (docs/attribution/03_website_map.md section 5; columns 34-56 were not listed there, so they are placeholders the code never writes) followed by the 71 attribution headers of 00_DESIGN.md section 3.6, in order, then the 3 CAPI result columns added in marketing_machine_2026-11 Stage 2 (appended at the end). The gift columns contain an em dash in the live sheet; it is stored here as a JSON escape.",
+  "_note": "Header row of tab 0 (מעקב הזמנות) as FileStore must filter rows through it: the 62 live headers read 2026-10-30 (docs/attribution/03_website_map.md section 5; columns 34-56 were not listed there, so they are placeholders the code never writes) followed by the 71 attribution headers of 00_DESIGN.md section 3.6, in order, then the 3 CAPI result columns added in marketing_machine_2026-11 Stage 2, ga_session_id (Stage 6) and the 9 reconciliation columns (Stage 3), each block appended at the end. The gift columns contain an em dash in the live sheet; it is stored here as a JSON escape.",
   "live_count": 62,
-  "attribution_count": 74,
+  "attribution_count": 84,
   "headers": [
     "צריך קבלה?",
     "מספר קבלה",
@@ -138,6 +138,16 @@
     "commission_status",
     "capi_lead_result",
     "capi_lead_sent_at",
-    "capi_last_error_code"
+    "capi_last_error_code",
+    "ga_session_id",
+    "grow_paid_at",
+    "revenue_net_ils",
+    "fee_ils",
+    "refund_amount",
+    "refunded_at",
+    "credit_doc_number",
+    "recon_status",
+    "recon_source",
+    "recon_at"
   ]
 }

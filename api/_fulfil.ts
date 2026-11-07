@@ -10,7 +10,7 @@ import { Resend } from "resend";
 import type { OrderRecord } from "./_attribution_core.js";
 import { postbackSale, computeCommission } from "./_affiliate.js";
 import { withLock } from "./_bg.js";
-import { ga4ServerConfigured, sendGa4Purchase } from "./_ga4.js";
+import { ga4PurchaseFromOrder, ga4ServerWillSend, sendGa4Purchase } from "./_ga4.js";
 // capiPurchase lives in _meta-capi.ts (no gift-release imports), so scripts/capi-retry.ts can reuse it.
 import { capiPurchase } from "./_meta-capi.js";
 export { capiPurchase };
@@ -174,16 +174,14 @@ export async function fulfilPaid(order_id: string, opts: { provider?: "grow" | "
     // 2. Meta CAPI Purchase (the only Purchase; event_id purchase_<order_id>)
     try { o = await capiPurchase(store, o); } catch (e) { console.error("[fulfil] capi failed:", e instanceof Error ? e.message : e); }
 
-    // 3. GA4 Measurement Protocol (only when configured; else the thank-you page sends it)
-    if (ga4ServerConfigured(o.ga_client_id)) {
+    // 3. GA4 Measurement Protocol, with the visit's session_id (only when GA4_API_SECRET and
+    //    GA4_MEASUREMENT_ID are set and consent is not denied; else the thank-you page sends it)
+    if (ga4ServerWillSend(o)) {
       const cur = o;
       o = await step(store, o, "ga4", async () => {
-        const r = await sendGa4Purchase({
-          client_id: cur.ga_client_id as string, order_id: cur.order_id, value: cur.paid_amount ?? cur.amount_expected, currency: "ILS",
-          items: [{ item_id: plan(cur), item_name: plan(cur), price: cur.paid_amount ?? cur.amount_expected, quantity: 1 }],
-          timestamp_micros: cur.paid_at ? Date.parse(cur.paid_at) * 1000 : undefined,
-        });
-        if (!r.ok) throw new Error(`ga4 ${r.detail}`);
+        const r = await sendGa4Purchase(ga4PurchaseFromOrder(cur, plan(cur)));
+        // A GA4_DEBUG=1 send only validates (GA4 records nothing), so it must not mark the step done.
+        if (!r.ok || r.detail.startsWith("debug")) throw new Error(`ga4 ${r.detail}`);
       });
     }
 

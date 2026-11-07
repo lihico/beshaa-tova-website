@@ -5,7 +5,7 @@
  * Domain=COOKIE_DOMAIN only when the request host is inside that domain (preview URLs get none).
  */
 import {
-  type AttributionState, encodeAttCookie, decodeAttCookie, buildFbc, fbcClickId, isVisitorId,
+  type AttributionState, encodeAttCookie, decodeAttCookie, buildFbc, fbcClickId, isVisitorId, GA_SESSION_COOKIE,
 } from "./_attribution_core.js";
 
 export const COOKIE_VID = "bsh_vid";
@@ -137,4 +137,9 @@ export function fbcForClick(req: ReqLike, fbclid: string, nowMs: number = Date.n
 
 export function readGaClientCookie(req: ReqLike): string | null {
   return readCookie(req, COOKIE_GA);
+}
+
+/** The raw `_ga_W3Z965PSD0` value (GS1 or GS2 form; parse with parseGaSessionId). */
+export function readGaSessionCookie(req: ReqLike): string | null {
+  return readCookie(req, GA_SESSION_COOKIE);
 }

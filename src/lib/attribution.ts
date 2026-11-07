@@ -18,12 +18,14 @@ import {
   isVisitorId,
   mergeState,
   mergeTouch,
+  GA_SESSION_COOKIE,
   parseGaClientId,
+  parseGaSessionId,
   parseTouch,
   sanitizeState,
   type AttributionState,
 } from "../../api/_attribution_core";
-import { getSessionId } from "./tracking";
+import { getSessionId, setGaVisitorProperty } from "./tracking";
 
 const LS_STATE = "bsh_attr_v2";
 const LS_VISITOR = "bsh_visitor_id";
@@ -122,6 +124,8 @@ export function captureTouch(opts: { url?: string; referrer?: string; internal?:
         if (!server) return;
         // Server state is `b`: it wins ties on first.ts and supplies the visitor id.
         writeLocal(mergeState(readLocal() ?? local, server));
+        // The server visitor id is known now: give GA4 the same bsh_vid (no-op when unchanged).
+        setGaVisitorProperty();
       })
       .catch(() => {});
   } catch {
@@ -139,6 +143,19 @@ export function getGaClientId(): string | null {
   try {
     const m = document.cookie.match(/(?:^|; )_ga=([^;]+)/);
     return m ? parseGaClientId(decodeURIComponent(m[1])) : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * GA4 session id from the _ga_W3Z965PSD0 cookie, in its GS1 or GS2 form, or null (PLAN.md Stage 6).
+ * Sent with the order so the server-side purchase joins the visit's GA4 session.
+ */
+export function getGaSessionId(): string | null {
+  try {
+    const m = document.cookie.match(new RegExp(`(?:^|; )${GA_SESSION_COOKIE}=([^;]+)`));
+    return m ? parseGaSessionId(decodeURIComponent(m[1])) : null;
   } catch {
     return null;
   }

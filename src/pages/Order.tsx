@@ -10,7 +10,7 @@ import { trackEvent } from "@/lib/meta-pixel";
 import { gtagEvent } from "@/lib/gtag";
 import { trackFunnel, trackInitiateCheckoutOnce, getFbc, getFbp, getVisitorId, getSessionId } from "@/lib/tracking";
 import { getCafe } from "@/data/cafes";
-import { captureAttribution, getAttribution, getAttributionState, getGaClientId } from "@/lib/attribution";
+import { captureAttribution, getAttribution, getAttributionState, getGaClientId, getGaSessionId } from "@/lib/attribution";
 import { type OrderResponse, readOrderResponse, isPaymentUrl, goToPayment, rememberOrder } from "@/lib/payment";
 import { NEW_PRICES, PRICES, quoteNow } from "@/lib/prices";
 import { consentForOrder } from "@/lib/consent";
@@ -378,6 +378,7 @@ export default function Order() {
         notEngaged,
         clientDisplayedAmount: orderValue,
         ga_client_id: getGaClientId(),
+        ga_session_id: getGaSessionId(),
         visitor_id: getVisitorId(),
         session_id: getSessionId(),
         event_source_url: typeof location !== "undefined" ? location.href : undefined,
@@ -402,6 +403,13 @@ export default function Order() {
       currency: "ILS",
     });
     gtagEvent("generate_lead", { value: amount, currency: "ILS", order_id: result.order_id });
+    // GA4 funnel step between the lead and the paid purchase (PLAN.md Stage 6); nothing to pay, no checkout.
+    if (amount > 0) {
+      gtagEvent("begin_checkout", {
+        value: amount, currency: "ILS", order_id: result.order_id, flow: isVoucherRedeem ? "voucher_redeem" : "self",
+        items: [{ item_id: allMeetings ? "kit_all_meetings" : "kit", item_name: "couple_kit", price: amount, quantity: 1 }],
+      });
+    }
 
     if (result.order_id && isPaymentUrl(result.payment_url)) {
       rememberOrder({ order_id: result.order_id, kind: "order", names: [partner1.trim(), partner2.trim()] });
@@ -478,6 +486,7 @@ export default function Order() {
         attribution: getAttributionState(),
         clientDisplayedAmount: giftQuote.amount,
         ga_client_id: getGaClientId(),
+        ga_session_id: getGaSessionId(),
         visitor_id: getVisitorId(),
         session_id: getSessionId(),
         event_source_url: typeof location !== "undefined" ? location.href : undefined,
@@ -502,6 +511,12 @@ export default function Order() {
       currency: "ILS",
     });
     gtagEvent("generate_lead", { value: amount, currency: "ILS", order_id: result.order_id });
+    if (amount > 0) {
+      gtagEvent("begin_checkout", {
+        value: amount, currency: "ILS", order_id: result.order_id, flow: "gift",
+        items: [{ item_id: "gift", item_name: "couple_kit_gift", price: amount, quantity: 1 }],
+      });
+    }
 
     const giftNote = {
       order_id: result.order_id ?? "", kind: "gift" as const, names: [giverName.trim()],

@@ -9,7 +9,7 @@
  * (api/_mark_paid.ts). It lives here because Vercel Hobby allows 12 functions and api/ has 12.
  */
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { ga4ServerConfigured } from "./_ga4.js";
+import { ga4BrowserShouldSend } from "./_ga4.js";
 import { isOrderId, purchaseEventId } from "./_ids.js";
 import { handleMarkPaid } from "./_mark_paid.js";
 import { payments, paymentsEnabled } from "./_payments.js";
@@ -50,6 +50,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     ...(pay_url ? { pay_url, pay_mode: "fixed_page" } : {}),
     content_ids: meetings.length ? meetings : undefined,
     num_items: meetings.length || 1,
-    ga4_browser: !ga4ServerConfigured(order.ga_client_id),
+    // One GA4 purchase per order: the browser sends only when the server will not (none on denied consent).
+    ga4_browser: ga4BrowserShouldSend(order),
   });
 }

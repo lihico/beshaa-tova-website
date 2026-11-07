@@ -129,6 +129,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       await alert("second_payment_for_paid_order", { order_id: order.order_id, transactionId: n.transactionId });
       return { body: { ok: true } };
     }
+    // A refunded order (PLAN.md Stage 3, scripts/reconcile-payments.ts) is never re-marked paid by a late or
+    // repeated notify; the other Grow paths already refuse anything that is not pending.
+    if (order.payment_status === "refunded") {
+      await alert("webhook_for_order_not_pending", { order_id: order.order_id, payment_status: order.payment_status, transactionId: n.transactionId });
+      return { body: { ok: true } };
+    }
     // 6. verify with Grow (statusCode 2, sum, process id belongs to the order)
     const v = await adapter.verify(n, order);
     if (!v.ok) {

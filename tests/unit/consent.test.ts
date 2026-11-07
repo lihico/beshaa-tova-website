@@ -11,6 +11,7 @@ class MemStorage {
   throwing = false;
   getItem(k: string) { if (this.throwing) throw new Error("blocked"); return this.m.has(k) ? (this.m.get(k) as string) : null; }
   setItem(k: string, v: string) { if (this.throwing) throw new Error("blocked"); this.m.set(k, String(v)); }
+  removeItem(k: string) { if (this.throwing) throw new Error("blocked"); this.m.delete(k); }
   clear() { this.m.clear(); this.throwing = false; }
 }
 
@@ -179,4 +180,59 @@ test("debug / system-test orders are recognised (Lihi 7.11.2026)", () => {
   assert.equal(isSystemTestBody({ notes: "משהו | בדיקת מערכת" }), true);
   assert.equal(isSystemTestBody({ test: "true", freeText: "רגיל" }), false);
   assert.equal(isSystemTestBody({}), false);
+});
+
+describe("footer cookie settings link (00_DESIGN 15)", () => {
+  function withEvents(fn: (seen: string[]) => void) {
+    const seen: string[] = [];
+    const prev = g.dispatchEvent;
+    g.dispatchEvent = (e: { type: string }) => { seen.push(e.type); return true; };
+    try { fn(seen); } finally { if (prev === undefined) delete g.dispatchEvent; else g.dispatchEvent = prev; }
+  }
+
+  test("reopenConsent keeps the saved choice (a no stays no) and fires the reopen event; trackers are not touched", () => {
+    withEvents((seen) => {
+      consent.setConsent("denied", 1);
+      fbqCalls.length = 0; gtagCalls.length = 0;
+      consent.reopenConsent();
+      assert.notEqual(store.getItem(consent.CONSENT_KEY), null);
+      assert.equal(consent.consentForOrder(), "denied");
+      assert.deepEqual(seen, [consent.CONSENT_REOPEN_EVENT]);
+      assert.deepEqual(fbqCalls, []);
+      assert.deepEqual(gtagCalls, []);
+    });
+  });
+
+  test("a new choice after reopening is remembered", () => {
+    withEvents(() => {
+      consent.setConsent("granted", 1);
+      consent.reopenConsent();
+      consent.setConsent("denied", 2);
+      assert.equal(consent.readConsent(), "denied");
+    });
+  });
+
+  test("blocked storage: no throw, the bar is still asked to reopen", () => {
+    withEvents((seen) => {
+      store.throwing = true;
+      assert.doesNotThrow(() => consent.reopenConsent());
+      assert.deepEqual(seen, [consent.CONSENT_REOPEN_EVENT]);
+    });
+  });
+
+  test("no dispatchEvent (non-browser) is fine", () => {
+    const prev = g.dispatchEvent;
+    delete g.dispatchEvent;
+    try { assert.doesNotThrow(() => consent.reopenConsent()); }
+    finally { if (prev !== undefined) g.dispatchEvent = prev; }
+  });
+
+  test("the footer wires the link to reopenConsent and ConsentBar listens for the event", () => {
+    const read = (p: string) => readFileSync(fileURLToPath(new URL(p, import.meta.url)), "utf8");
+    const footer = read("../../src/components/Footer.tsx");
+    assert.match(footer, /onClick=\{reopenConsent\}/);
+    assert.match(footer, /הגדרות עוגיות/);
+    const bar = read("../../src/components/ConsentBar.tsx");
+    assert.match(bar, /addEventListener\(CONSENT_REOPEN_EVENT/);
+  });
 });

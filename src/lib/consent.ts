@@ -26,7 +26,9 @@ export const UNKNOWN_POLICY: ConsentChoice = "granted";
 interface StoredConsent { v: ConsentChoice; t: number }
 
 interface ConsentGlobals {
-  localStorage?: { getItem(k: string): string | null; setItem(k: string, v: string): void };
+  localStorage?: { getItem(k: string): string | null; setItem(k: string, v: string): void; removeItem?(k: string): void };
+  dispatchEvent?: (e: unknown) => boolean;
+  Event?: new (type: string) => unknown;
   fbq?: (...args: unknown[]) => void;
   gtag?: (...args: unknown[]) => void;
 }
@@ -80,5 +82,21 @@ export function setConsent(choice: ConsentChoice, now: number = Date.now()): voi
   } catch { /* ignore */ }
   try {
     g.gtag?.("consent", "update", consentModeFields(choice));
+  } catch { /* ignore */ }
+}
+
+/** Window event the footer's "cookie settings" link fires; ConsentBar listens and reopens. */
+export const CONSENT_REOPEN_EVENT = "bsh:consent-reopen";
+
+/**
+ * The footer's "cookie settings" link (00_DESIGN 15: a footer link to change the choice).
+ * Forgets the remembered choice (best effort), then asks ConsentBar to show again.
+ * The trackers keep the current state until the visitor picks again; nothing is granted or revoked here.
+ */
+export function reopenConsent(): void {
+  // The saved choice is kept (Claude for Lihi, 7.11.2026): a visitor who said no stays "denied" until
+  // they pick again in the reopened bar, so reopening alone never turns measurement back on.
+  try {
+    if (g.dispatchEvent && g.Event) g.dispatchEvent(new g.Event(CONSENT_REOPEN_EVENT));
   } catch { /* ignore */ }
 }

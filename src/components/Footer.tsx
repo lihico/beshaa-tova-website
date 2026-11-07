@@ -1,10 +1,15 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Mail, MessageCircle, Instagram, Facebook } from "lucide-react";
+import { reopenConsent } from "@/lib/consent";
 
 export function Footer() {
+  // On home-like pages the phone's sticky order button (StickyMobileCTA, about 65px) covers the bottom
+  // of the footer, so leave room for it there; otherwise the last link (cookie settings) cannot be tapped.
+  const { pathname } = useLocation();
+  const isHomeLike = pathname === "/" || pathname === "/preview";
   return (
     <footer className="border-t border-border/60 bg-warm-gray-50">
-      <div className="mx-auto max-w-6xl px-6 py-12">
+      <div className={`mx-auto max-w-6xl px-6 py-12${isHomeLike ? " pb-28 md:pb-12" : ""}`}>
         <div className="flex flex-col items-center gap-8 md:flex-row md:items-start md:justify-between">
           {/* Logo & tagline */}
           <div className="flex flex-col items-center gap-3 md:items-start">
@@ -55,6 +60,14 @@ export function Footer() {
           <Link to="/terms" className="text-xs text-muted-foreground transition-colors hover:text-foreground">
             תנאי שימוש ומדיניות פרטיות
           </Link>
+          {/* 00_DESIGN 15: change the cookie choice later. DRAFT he label: awaiting Lihi. */}
+          <button
+            type="button"
+            onClick={reopenConsent}
+            className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+          >
+            הגדרות עוגיות
+          </button>
         </div>
       </div>
     </footer>

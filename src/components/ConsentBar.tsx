@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { needsConsentChoice, setConsent, type ConsentChoice } from "@/lib/consent";
+import { CONSENT_REOPEN_EVENT, needsConsentChoice, setConsent, type ConsentChoice } from "@/lib/consent";
 
 /**
  * A slim cookie bar at the bottom (docs/attribution/00_DESIGN.md 15). Lihi, 7.11.2026: "ממש ממש קטן ולא מציק".
- * Never a modal, never blocks scrolling, shows until a choice is made, then never again.
+ * Never a modal, never blocks scrolling, shows until a choice is made, then only again from the footer's
+ * "cookie settings" link (reopenConsent).
  * While it shows, the page gets matching bottom padding so nothing (the order button, the footer) ends up under it.
  * The two buttons look the same on purpose (00_DESIGN 15: equal accept / decline).
  * The left edge is kept clear for the WhatsApp bubble; on the home pages it rises above the sticky phone CTA.
@@ -21,6 +22,13 @@ export function ConsentBar() {
     let debug = false;
     try { debug = new URLSearchParams(window.location.search).get("debug") === "true"; } catch { /* ignore */ }
     setOpen(debug || needsConsentChoice());
+  }, []);
+
+  // The footer's "cookie settings" link (reopenConsent) brings the bar back so the choice can change.
+  useEffect(() => {
+    const onReopen = () => setOpen(true);
+    window.addEventListener(CONSENT_REOPEN_EVENT, onReopen);
+    return () => window.removeEventListener(CONSENT_REOPEN_EVENT, onReopen);
   }, []);
 
   // Mirror StickyMobileCTA's rule (home-like page, scrolled past 600px, phone width).

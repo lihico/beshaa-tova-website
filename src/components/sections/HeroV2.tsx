@@ -91,10 +91,10 @@ export function HeroV2({ conversion = false, orderSearch = "", showChecklistIntr
             {/* H3 (Lihi, 14.11.2026): "מבוססת מחקר" added; one line on the phone too, so the buttons fit higher (U6). */}
             <p className="text-[0.88rem] leading-snug text-terracotta-700 md:text-[0.9rem]" aria-label="יתרונות הערכה">
               <span className="block w-full text-center">
-                עצמאית ומובנית<span className="mx-1.5 text-warm-gray-400 md:mx-2">·</span>
-                מבוססת מחקר<span className="mx-1.5 text-warm-gray-400 md:mx-2">·</span>
-                מותאמת אישית<span className="mx-1.5 text-warm-gray-400 md:mx-2">·</span>
-                עד הבית
+                <span className="whitespace-nowrap">עצמאית ומובנית</span><span className="mx-1.5 text-warm-gray-400 md:mx-2">·</span>
+                <span className="whitespace-nowrap">מבוססת מחקר</span><span className="mx-1.5 text-warm-gray-400 md:mx-2">·</span>
+                <span className="whitespace-nowrap">מותאמת אישית</span><span className="mx-1.5 text-warm-gray-400 md:mx-2">·</span>
+                <span className="whitespace-nowrap">עד הבית</span>
               </span>
             </p>
             {conversion && (

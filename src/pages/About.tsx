@@ -17,9 +17,11 @@ export default function About() {
         {/* Header + hero illustration */}
         <FadeIn className="mb-14 text-center">
           <img
-            src="/illustrations/about-coffee-table.png"
-            alt="איור של שולחן קפה עם הערכה של בשעה טובה"
-            className="mx-auto mb-10 h-auto w-full max-w-sm illustration-fade"
+            src="/illustrations/about-wedding-garden-path.jpg"
+            alt="חתן וכלה הולכים יד ביד בשביל בין צמחייה ירוקה, מצולמים מלמעלה ומאחור"
+            width={1200}
+            height={799}
+            className="mx-auto mb-10 aspect-[3/2] h-auto w-full rounded-2xl object-cover shadow-sm"
           />
           <h1 className="mb-2 text-3xl font-bold text-foreground md:text-4xl">
             הסיפור של &quot;בשעה טובה&quot;
@@ -34,6 +36,8 @@ export default function About() {
           <p className="border-r-2 border-terracotta-300 pr-4 text-lg font-medium text-foreground">
             לפני שנה התחתנו.
           </p>
+          <div className="grid gap-6 md:grid-cols-[1fr_13rem] md:items-start">
+          <div className="space-y-5">
           <p className="text-[0.95rem]">
             אנחנו ביחד כבר למעלה מעשור. בתוך כל הטירוף הלוגיסטי של החתונה הרגשנו
             שאנחנו רוצים לצקת לתקופה הזאת קצת יותר משמעות - לא רק לתכנן אירוע,
@@ -44,6 +48,16 @@ export default function About() {
             הבית שלנו. ולמרות שיש לנו תקשורת טובה - משהו בשיח הזה היה אחר.
             לקראת החתונה הפכנו את התובנות לכתובה אישית, שתלויה אצלנו בבית עד היום.
           </p>
+          </div>
+          <img
+            src="/illustrations/about-wedding-window.jpg"
+            alt="כלה יושבת עם הגב למצלמה מול חלון, השיער אסוף בצמה עדינה, בבוקר החתונה"
+            width={824}
+            height={1100}
+            loading="lazy"
+            className="mx-auto aspect-[3/4] h-auto w-full max-w-[13rem] rounded-2xl object-cover shadow-sm md:mt-1"
+          />
+          </div>
 
           <p className="font-medium text-foreground">
             השיחות האלה נשארו איתנו גם הרבה אחרי:
@@ -84,11 +98,21 @@ export default function About() {
         </FadeIn>
 
         <FadeIn className="mb-14 space-y-5 leading-relaxed text-muted-foreground">
+          <div className="grid gap-6 md:grid-cols-[1fr_15rem] md:items-center">
           <p className="text-[0.95rem]">
             יום אחד עברתי ליד הכתובה בסלון וחשבתי על חברים שטובעים בים של ספקים
             והחלטות. אמרתי לעצמי: מה שעשינו היה כל כך משמעותי - אני חייבת לאפשר
             את זה לזוגות אחרים.
           </p>
+          <img
+            src="/illustrations/about-wedding-ketubah.jpg"
+            alt="יד חותמת בעט על כתובה אישית, על שולחן עם כוסות ונרות"
+            width={1100}
+            height={962}
+            loading="lazy"
+            className="mx-auto h-auto w-full max-w-[15rem] rounded-2xl object-cover shadow-sm"
+          />
+          </div>
 
           <div className="rounded-xl bg-terracotta-50/50 px-5 py-4">
             <p className="mb-3 text-[0.9rem] font-medium text-foreground">מה שקראתי במחקרים חיזק בדיוק את מה שחווינו:</p>

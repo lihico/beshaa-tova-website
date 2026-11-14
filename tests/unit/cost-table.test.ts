@@ -66,7 +66,7 @@ describe("rate card cybercamp-2026-11 (PLAN 4.1)", () => {
     assert.equal(c.grow.refund, 6.9);
     assert.equal(c.grow.chargeback, 55);
     assert.equal(c.make_per_order, 0);
-    assert.deepEqual(c.list_price, { 8: 349, 11: 410 });
+    assert.deepEqual(c.list_price, { 4: 199, 8: 349, 11: 410 });
   });
   test("default print figures follow from the mean page counts", () => {
     assert.equal(printFromPages(c.default_pages[8], c, true), 120.0);

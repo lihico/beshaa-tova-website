@@ -5,10 +5,10 @@
  */
 import type { Partner, ResolvedPromo } from "./_attribution_core.js";
 import { FRIEND_CODES_10PCT } from "./_friend_codes_10pct.js";
-import { priceTable, quote, type PriceTable } from "./_price_table.js";
+import { priceTable, quote, type KitTier, type PriceTable } from "./_price_table.js";
 
-export type { ResolvedPromo, PriceTable };
-export { PRICES_2026_10, PRICES_2026_11, quote, chargeableAmounts } from "./_price_table.js";
+export type { ResolvedPromo, PriceTable, KitTier };
+export { PRICES_2026_10, PRICES_2026_11, quote, chargeableAmounts, pairAmounts, pairQuote, tierFor, tierOfRule, isKitTier, TIER_MEETINGS } from "./_price_table.js";
 
 /** NEW_PRICES=1 -> the 2026-11 table. Read at call time (tests switch it per run). */
 export function newPricesEnabled(): boolean {
@@ -31,6 +31,8 @@ export const PARTNER_CODE_RE = /^[A-Z0-9]{6,16}$/i;
 export interface PriceInput {
   kind: "order" | "gift";
   allMeetings: boolean;
+  /** lite / base / all; wins over allMeetings when given. */
+  tier?: KitTier;
   promo: Pick<ResolvedPromo, "discount_pct"> | null;
   freeVoucher: boolean;
   /** Express shipping (self orders only; ignored when the table has no express). */
@@ -39,7 +41,7 @@ export interface PriceInput {
 
 export function priceOrder(i: PriceInput, table: PriceTable = activePrices()): { amount: number; rule: string; express: number } {
   const q = quote(table, {
-    kind: i.kind, allMeetings: i.allMeetings, express: Boolean(i.express),
+    kind: i.kind, allMeetings: i.allMeetings, tier: i.tier, express: Boolean(i.express),
     discountPct: i.promo ? i.promo.discount_pct : 0, freeVoucher: i.freeVoucher,
   });
   return { amount: q.amount, rule: q.rule, express: q.express };

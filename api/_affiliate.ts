@@ -28,7 +28,7 @@ export function computeCommission(
 
 export interface SalePostback {
   order_id: string; partner_id: string; fp_ref_id: string | null; code: string | null;
-  amount_ils: number; plan: "kit" | "kit_all_meetings" | "gift";
+  amount_ils: number; plan: "kit" | "kit_all_meetings" | "kit_lite" | "gift";
 }
 
 export async function postbackSale(s: SalePostback): Promise<{ ok: boolean; detail: string }> {

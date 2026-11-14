@@ -24,11 +24,11 @@ const ORDER = "BT2611K7Q3XA";
 const WITH_EXPRESS = { ...PRICES_2026_11, express: 50 };
 
 describe("price table", () => {
-  test("2026-11 table, express off (4.11.2026): no express amounts", () => {
-    assert.deepEqual(chargeableAmounts(PRICES_2026_11).map((a) => a.amount), [314, 332, 349, 369, 390, 410]);
+  test("2026-11 table, express off (4.11.2026): no express amounts; lite 199 / 189 / 179 (14.11.2026)", () => {
+    assert.deepEqual(chargeableAmounts(PRICES_2026_11).map((a) => a.amount), [179, 189, 199, 314, 332, 349, 369, 390, 410]);
   });
   test("every chargeable amount of the 2026-11 table with express on (one fixed Grow page each)", () => {
-    assert.deepEqual(chargeableAmounts(WITH_EXPRESS).map((a) => a.amount), [314, 332, 349, 364, 369, 382, 390, 399, 410, 419, 440, 460]);
+    assert.deepEqual(chargeableAmounts(WITH_EXPRESS).map((a) => a.amount), [179, 189, 199, 229, 239, 249, 314, 332, 349, 364, 369, 382, 390, 399, 410, 419, 440, 460]);
     const by = Object.fromEntries(chargeableAmounts(WITH_EXPRESS).map((a) => [a.amount, a.label]));
     assert.match(by[349], /8 meetings/); assert.match(by[349], /gift voucher, 8 meetings/);
     assert.match(by[410], /gift voucher, full kit/);

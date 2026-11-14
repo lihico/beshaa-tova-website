@@ -24,8 +24,8 @@ export interface CreatePaymentInput {
   kind: "order" | "gift";
   /** cField1 order id, cField2 visitor hex, cField3 partner|ref, cField4 lt_channel (no PII, no tokens). */
   cFields: { cField1: string; cField2: string; cField3: string; cField4: string };
-  /** Grow productData catalogNumber: kit | kit_all | gift (defaults from kind). */
-  catalogNumber?: "kit" | "kit_all" | "gift";
+  /** Grow productData catalogNumber: kit | kit_all | kit_lite | gift (defaults from kind). */
+  catalogNumber?: "kit" | "kit_all" | "kit_lite" | "gift";
 }
 export interface CreatePaymentResult { payment_url: string; process_id: string; process_token: string }
 

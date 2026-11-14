@@ -74,7 +74,11 @@ export function buildVoucherHtml(d: {
   blessing?: string | null;
   code: string;
   qrDataUri?: string | null;
+  /** The kit the voucher pays for (14.11.2026): 4 (lite), 8 or 11. Unknown = the three options. */
+  meetings?: 4 | 8 | 11 | null;
 }): string {
+  // DRAFT he copy: awaiting Lihi (replaces "5-8 מפגשים", which no kit matches any more)
+  const meetingsText = d.meetings === 4 ? "4 מפגשים" : d.meetings === 8 ? "8 מפגשים" : d.meetings === 11 ? "כל 11 המפגשים" : "4, 8 או 11 מפגשים";
   const qrData = encodeURIComponent(buildRedeemUrl(d.code));
   const qrSrc = d.qrDataUri || `https://api.qrserver.com/v1/create-qr-code/?size=300x300&amp;data=${qrData}&amp;color=3D2B1F&amp;bgcolor=FFFFFF`;
   const blessing = d.blessing && d.blessing.trim()
@@ -163,7 +167,7 @@ export function buildVoucherHtml(d: {
     <div class="how-it-works">
       <div class="how-title">איך זה עובד?</div>
       <div class="vstep"><img src="${STEP1}" alt="" class="vstep-icon" /><div class="vstep-body"><span class="vstep-n">1</span><span class="vstep-title">מזמינים</span><div class="vstep-desc">בוחרים את הנושאים שחשובים לכם</div></div></div>
-      <div class="vstep"><img src="${STEP2}" alt="" class="vstep-icon" /><div class="vstep-body"><span class="vstep-n">2</span><span class="vstep-title">מקבלים ערכה מותאמת אישית עד הבית</span><div class="vstep-desc">5-8 מפגשים עם בסיס לשיח בנושאים שבחרתם, מבוסס מחקר ובגובה העיניים</div></div></div>
+      <div class="vstep"><img src="${STEP2}" alt="" class="vstep-icon" /><div class="vstep-body"><span class="vstep-n">2</span><span class="vstep-title">מקבלים ערכה מותאמת אישית עד הבית</span><div class="vstep-desc">${meetingsText} עם בסיס לשיח בנושאים שבחרתם, מבוסס מחקר ובגובה העיניים</div></div></div>
       <div class="vstep"><img src="${STEP3}" alt="" class="vstep-icon" /><div class="vstep-body"><span class="vstep-n">3</span><span class="vstep-title">יוצאים לדייטים</span><div class="vstep-desc">ערב אחד בשבוע יוצאים לקפה, לים או לפארק ומחזקים את יסודות הקשר</div></div></div>
       <div class="vstep-note">* אפשרות לליווי מקצועי בכתיבת מסמך זוגיות או כתובה אישית על בסיס המפגשים</div>
     </div>

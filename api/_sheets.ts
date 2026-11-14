@@ -18,6 +18,8 @@ const REFERRAL_LABELS: Record<string, string> = {
 const RECEIPT_HEADER = "צריך קבלה?";
 /** DRAFT he copy: awaiting Lihi. Marks a full-kit gift voucher in the notes; read by api/_voucher_lookup.ts. */
 export const GIFT_ALL_MEETINGS_NOTE = "שובר לערכה מלאה (11 מפגשים)";
+/** A lite voucher (4 meetings); read back by api/_voucher_lookup.ts like the full-kit note. */
+export const GIFT_LITE_NOTE = "שובר לערכת לייט (4 מפגשים)";
 const PARTNER_PHONE_HEADER = "טלפון בן/בת הזוג";
 
 async function getHeaders(sheet: NonNullable<Awaited<ReturnType<typeof getSheet>>>): Promise<string[]> {
@@ -94,6 +96,9 @@ export async function appendOrderRow(data: {
   allMeetings?: boolean;
   /** The full-kit price from the live price table (api/_price_table.ts), for the notes column. */
   allMeetingsPrice?: number;
+  /** The lite kit (4 meetings) and its price, for the notes column (14.11.2026). */
+  lite?: boolean;
+  litePrice?: number;
   /** Express shipping surcharge (0 / undefined = regular shipping). */
   expressIls?: number;
   freeText?: string | null;
@@ -137,10 +142,13 @@ export async function appendOrderRow(data: {
     source = `${referral || "טופס באתר"} (פרומו ${data.promoCode})`;
   } else if (data.allMeetings) {
     source = `${referral || "טופס באתר"} (כל המפגשים)`;
+  } else if (data.lite) {
+    source = `${referral || "טופס באתר"} (לייט)`;
   }
 
   const notesParts: string[] = [];
   if (data.allMeetings) notesParts.push(`כל 11 המפגשים${data.allMeetingsPrice ? ` - ${data.allMeetingsPrice} ₪` : ""}`);
+  if (data.lite) notesParts.push(`ערכת לייט, 4 מפגשים${data.litePrice ? ` - ${data.litePrice} ₪` : ""}`);
   if (data.expressIls) notesParts.push(`משלוח מהיר (+${data.expressIls} ₪)`);
   if (data.postWedding) notesParts.push("אחרי החתונה");
   if (data.shabbat) notesParts.push("מפגשים בשבת (שומרי שבת)");
@@ -230,6 +238,8 @@ export async function appendGiftRow(data: {
   refCode?: string | null;
   /** A full-kit voucher (all 11 meetings): written to the notes, read back by api/_voucher_lookup.ts. */
   giftAllMeetings?: boolean;
+  /** A lite voucher (4 meetings): written to the notes, read back like the full-kit note. */
+  giftLite?: boolean;
   giftPrice?: number;
   // Attribution columns (docs/attribution 3.6) incl. fbc, fbp, event_id, visitor_id, session_id.
   attr?: Record<string, string>;
@@ -241,6 +251,7 @@ export async function appendGiftRow(data: {
 
   const notesParts: string[] = [];
   if (data.giftAllMeetings) notesParts.push(`${GIFT_ALL_MEETINGS_NOTE}${data.giftPrice ? ` - ${data.giftPrice} ₪` : ""}`);
+  if (data.giftLite) notesParts.push(`${GIFT_LITE_NOTE}${data.giftPrice ? ` - ${data.giftPrice} ₪` : ""}`);
   if (data.postWedding) notesParts.push("אחרי החתונה");
   if (data.notes) notesParts.push(data.notes);
 

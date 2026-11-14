@@ -4,6 +4,7 @@ import path from "node:path";
 import { israeliMobileE164Digits, type OrderRecord } from "./_attribution_core.js";
 import { purchaseEventId } from "./_ids.js";
 import { META_GRAPH_VERSION } from "./_meta_version.js";
+import { tierOfRule } from "./_price_table.js";
 
 // Read at call time, not module load (docs/attribution 5.8): tests set env per run.
 const pixelId = () => process.env.META_PIXEL_ID || "946664901627405";
@@ -243,8 +244,8 @@ function splitName(full: string): { fn: string | null; ln: string | null } {
   return { fn: parts[0] ?? null, ln: parts.length > 1 ? parts.slice(1).join(" ") : null };
 }
 
-function purchasePlan(o: OrderRecord): "kit" | "kit_all_meetings" | "gift" {
-  return o.order_kind === "gift" ? "gift" : o.all_meetings ? "kit_all_meetings" : "kit";
+function purchasePlan(o: OrderRecord): "kit" | "kit_all_meetings" | "kit_lite" | "gift" {
+  return o.order_kind === "gift" ? "gift" : o.all_meetings ? "kit_all_meetings" : tierOfRule(o.price_rule) === "lite" ? "kit_lite" : "kit";
 }
 
 /**

@@ -227,7 +227,7 @@ export interface DrillNode {
 
 export interface Story {
   order_id: string; kind: string; created: string | null; created_exact: string | null;
-  status: string; amount: number; price_rule: string | null; meetings: 8 | 11; express: boolean; promo: boolean;
+  status: string; amount: number; price_rule: string | null; meetings: 4 | 8 | 11; express: boolean; promo: boolean;
   credited: { channel: string | null; rule: string | null };
   model_channels: Record<Model, string | null>;
   touches: StoryTouch[];
@@ -241,7 +241,7 @@ export interface Story {
 export interface Dashboard {
   schema: number; generated_at: string; source: string;
   spend: { present: boolean; fetched_at: string | null; message: string | null; rows: number; currency: string | null };
-  targets: { break_even_cac: number; working_target_cac: number; basis: Basis; prior_cost: typeof PRIOR_COST; proxy: Proxy; paid_kits: { m8: number; m11: number } };
+  targets: { break_even_cac: number; working_target_cac: number; basis: Basis; prior_cost: typeof PRIOR_COST; proxy: Proxy; paid_kits: { m8: number; m11: number; m4?: number } };
   windows: Record<WindowKey, { from: string | null; to: string | null; label: string }>;
   health: HealthItem[];
   kpi: Record<WindowKey, Kpi>;
@@ -280,7 +280,8 @@ export function buildDashboard(data: ReportData, opts: DashboardOptions): Dashbo
   }
   const paidKits = data.orders.filter((o) => isPaid(o) && o.order_kind !== "gift");
   const m11 = paidKits.filter((o) => meetingsOf(o) === 11).length;
-  const breakEven = weightedBreakEvenCac(paidKits.length - m11, m11, basis);
+  const m4 = paidKits.filter((o) => meetingsOf(o) === 4).length;
+  const breakEven = weightedBreakEvenCac(paidKits.length - m11 - m4, m11, basis, m4);
   const cogsOf = (ids: string[]) => round2(ids.reduce((s, id) => s + Number(cost.get(id)?.cogs_ils ?? 0), 0));
   const feesOf = (ids: string[]) => round2(ids.reduce((s, id) => s + Number(cost.get(id)?.grow_fee_ils ?? 0), 0));
   const revExOf = (orders: OrderRecord[]) => round2(orders.reduce((s, o) => s + revenueExVat(revenueOf(o)), 0));
@@ -429,7 +430,7 @@ export function buildDashboard(data: ReportData, opts: DashboardOptions): Dashbo
       present: !!spend, fetched_at: spend?.fetched_at ?? null, message: spend ? null : NO_SPEND_MESSAGE, rows: spend?.rows.length ?? 0,
       currency: spend?.rows.find((r) => r.account_currency)?.account_currency ?? null,
     },
-    targets: { break_even_cac: breakEven, working_target_cac: WORKING_TARGET_CAC_ILS, basis, prior_cost: PRIOR_COST, proxy, paid_kits: { m8: paidKits.length - m11, m11 } },
+    targets: { break_even_cac: breakEven, working_target_cac: WORKING_TARGET_CAC_ILS, basis, prior_cost: PRIOR_COST, proxy, paid_kits: { m8: paidKits.length - m11 - m4, m11, m4 } },
     windows: W, health, kpi, channels, drill, funnel, time_to_purchase: ttp,
     orders, order_ids: Object.keys(orders), money, excluded_tests: data.excluded_tests?.length ?? 0,
   };

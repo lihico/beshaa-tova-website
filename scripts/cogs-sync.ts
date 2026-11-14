@@ -52,6 +52,10 @@ export function isTestOrder(id: string, testIds: ReadonlySet<string>): boolean {
 export function meetingsOf(o: OrderCostInput): Meetings {
   if (o.all_meetings === true) return 11;
   if (Array.isArray(o.meetings) && o.meetings.length >= 11) return 11;
+  // The lite kit (14.11.2026): its rules say "lite" (lite_199, lite_promo5_189, gift_lite_199); a redeemed lite
+  // voucher has rule voucher_free, so 4 or fewer chosen meetings also mean lite.
+  if (/(^|_)lite(_|$)/.test(o.price_rule || "")) return 4;
+  if (o.order_kind === "redeem" && Array.isArray(o.meetings) && o.meetings.length > 0 && o.meetings.length <= 4) return 4;
   return /(^|_)all(_|$)|_410\b|_390\b/.test(o.price_rule || "") ? 11 : 8;
 }
 

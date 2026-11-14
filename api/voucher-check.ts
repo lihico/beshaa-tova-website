@@ -29,5 +29,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const verdict = await checkVoucher(code);
   res.setHeader("Cache-Control", "no-store");
   const valid = verdict.status === "valid";
-  return res.status(200).json({ status: verdict.status, names: valid ? verdict.names : null, all_meetings: valid && verdict.allMeetings });
+  // tier: which kit the voucher pays for (lite = 4 meetings, base = 8, all = 11); the order form locks it.
+  const tier = !valid ? null : verdict.allMeetings ? "all" : verdict.lite ? "lite" : "base";
+  return res.status(200).json({ status: verdict.status, names: valid ? verdict.names : null, all_meetings: valid && verdict.allMeetings, tier });
 }

@@ -10,7 +10,7 @@ import { buildVoucherQr, renderVoucherPdf } from "./_voucher-pdf.js";
 import { createReleaseToken, buildReleaseUrl } from "./_gift_release.js";
 import { toSheetColumns } from "./_attribution_core.js";
 import { newOrderId } from "./_ids.js";
-import { activePrices, priceOrder } from "./_pricing.js";
+import { activePrices, isKitTier, priceOrder, tierFor, type KitTier } from "./_pricing.js";
 import { getStore } from "./_store.js";
 import { startPayment } from "./_checkout.js";
 import { paymentsEnabled } from "./_payments.js";
@@ -35,7 +35,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const { giverName, giverPhone, giverEmail, coupleName1, coupleName2, weddingDate, blessing, couplePhoto, giftDelivery, coupleContactName, couplePhone, postWedding, notes, referralSource, wantReceipt, giftAllMeetings: giftAllRaw, ref, utm, fbc, fbp, event_id, visitor_id, event_source_url } = req.body;
+    const { giverName, giverPhone, giverEmail, coupleName1, coupleName2, weddingDate, blessing, couplePhoto, giftDelivery, coupleContactName, couplePhone, postWedding, notes, referralSource, wantReceipt, giftAllMeetings: giftAllRaw, giftTier: giftTierRaw, ref, utm, fbc, fbp, event_id, visitor_id, event_source_url } = req.body;
     const { refCode, utmText } = cleanAttribution(ref, utm);
 
     // Legacy /redeem post (src/pages/Redeem.tsx): giverEmail "redeem@voucher" never passed the email
@@ -76,8 +76,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const store = getStore();
     // The gift form offers the full kit only when the price table has a full-kit voucher price.
     const prices = activePrices();
-    const giftAllMeetings = giftAllRaw === true && prices.gift.all !== null;
-    const { amount, rule } = priceOrder({ kind: "gift", allMeetings: giftAllMeetings, promo: null, freeVoucher: false }, prices);
+    // giftTier (14.11.2026): lite (4) / base (8) / all (11); an old bundle sends only giftAllMeetings.
+    const askedTier: KitTier = isKitTier(giftTierRaw) ? giftTierRaw : giftAllRaw === true ? "all" : "base";
+    const giftTier = tierFor(prices, { kind: "gift", allMeetings: askedTier === "all", tier: askedTier });
+    const giftAllMeetings = giftTier === "all";
+    const giftLite = giftTier === "lite";
+    const { amount, rule } = priceOrder({ kind: "gift", allMeetings: giftAllMeetings, tier: giftTier, promo: null, freeVoucher: false }, prices);
     const order_id = await newOrderId({ getOrder: (id) => store.getOrder(id).catch(() => null) });
     const record = buildOrderRecord(req, {
       order_id, kind: "gift", amount, rule, promo: null, promoCodeRaw: null,
@@ -101,7 +105,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         blessing, postWedding, notes, referralSource,
         voucherCode,
         wantReceipt: Boolean(wantReceipt), refCode,
-        giftAllMeetings, giftPrice: amount,
+        giftAllMeetings, giftLite, giftPrice: amount,
         attr: toSheetColumns(record),
       }));
     } catch (err) {
@@ -189,7 +193,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       } else {
         console.error("GIFT_RELEASE_SECRET is not set: falling back to attaching the voucher for Lihi");
         const qrDataUri = await buildVoucherQr(voucherCode);
-        const voucherHtml = buildVoucherHtml({ coupleName1, coupleName2, giverName, blessing, code: voucherCode, qrDataUri });
+        const voucherHtml = buildVoucherHtml({ coupleName1, coupleName2, giverName, blessing, code: voucherCode, qrDataUri, meetings: giftAllMeetings ? 11 : giftLite ? 4 : 8 });
         const voucherPdf = await renderVoucherPdf(voucherHtml);
         if (voucherPdf) {
           attachments.push({ filename: `שובר מתנה - ${coupleName1} ו${coupleName2} - ${voucherCode}.pdf`, content: voucherPdf.toString("base64") });
@@ -229,7 +233,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               ${storeFailed ? `<p style="background: #FEE2E2; border: 1px solid #F87171; border-radius: 8px; padding: 12px 16px; font-size: 15px;"><strong>ההזמנה לא נשמרה בטבלה</strong> (${order_id}).</p>` : ""}
               ${noPaymentLinkBlock(record, payment.payment_url)}
               ${storeFailed ? "" : markPaidEmailBlock(req, record, { gift: true })}
-              ${prices.gift.all !== null ? `<p style="background: #FDF2E9; border: 1px solid #E8A87C; border-radius: 8px; padding: 12px 16px; font-size: 16px; text-align: center;"><strong>${giftAllMeetings ? "שובר לערכה מלאה (11 מפגשים)" : "שובר לערכה (עד 8 מפגשים)"}</strong> &nbsp;|&nbsp; <strong>מחיר:</strong> ${amount} ₪</p>` : ""}
+              ${prices.gift.all !== null ? `<p style="background: #FDF2E9; border: 1px solid #E8A87C; border-radius: 8px; padding: 12px 16px; font-size: 16px; text-align: center;"><strong>${giftAllMeetings ? "שובר לערכה מלאה (11 מפגשים)" : giftLite ? "שובר לערכת לייט (4 מפגשים)" : "שובר לערכה (8 מפגשים)"}</strong> &nbsp;|&nbsp; <strong>מחיר:</strong> ${amount} ₪</p>` : ""}
               <table style="border-collapse: collapse; margin: 8px 0;">${lihiEmailRows(record)}
               </table>
               <h3 style="margin-top: 24px; color: #A85638;">נותנ/ת המתנה</h3>

@@ -6,7 +6,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { GoogleSpreadsheetWorksheet } from "google-spreadsheet";
-import { getOrderDoc, GIFT_ALL_MEETINGS_NOTE } from "./_sheets.js";
+import { getOrderDoc, GIFT_ALL_MEETINGS_NOTE, GIFT_LITE_NOTE } from "./_sheets.js";
 import { onTestReset } from "./_bg.js";
 import { VOUCHERS, AUTO_VOUCHER_CODE } from "../src/data/vouchers.js";
 
@@ -31,13 +31,15 @@ export interface VoucherVerdict {
   fromList: boolean;
   /** A full-kit voucher (all 11 meetings): price_rule gift_all_* or the notes mark. */
   allMeetings: boolean;
+  /** A lite voucher (4 meetings, 14.11.2026): price_rule gift_lite_* or the notes mark. */
+  lite?: boolean;
 }
 
 export function normalizeVoucherCode(code: unknown): string {
   return typeof code === "string" ? code.trim().toUpperCase().replace(/[^A-Z0-9-]/g, "").slice(0, 40) : "";
 }
 
-interface IndexEntry { gift: boolean; redeemed: boolean; names: string | null; released: boolean; allMeetings: boolean }
+interface IndexEntry { gift: boolean; redeemed: boolean; names: string | null; released: boolean; allMeetings: boolean; lite?: boolean }
 
 let _cache: { at: number; index: Map<string, IndexEntry> } | null = null;
 
@@ -90,6 +92,7 @@ function fileStoreIndex(dir: string): Map<string, IndexEntry> {
       e.gift = true;
       if (o.payment_status === "paid") e.released = true;
       if (String(o.price_rule ?? "").startsWith("gift_all")) e.allMeetings = true;
+      if (String(o.price_rule ?? "").startsWith("gift_lite")) e.lite = true;
     }
   }
   return index;
@@ -121,6 +124,7 @@ async function buildIndex(): Promise<Map<string, IndexEntry>> {
       e.names = e.names || String(r.get("שמות תצוגה") || "").trim() || null;
       if (String(r.get(VOUCHER_SENT_HEADER) || "").toUpperCase() === "TRUE") e.released = true;
       if (String(r.get("price_rule") || "").startsWith("gift_all") || String(r.get("הערות") || "").includes(GIFT_ALL_MEETINGS_NOTE)) e.allMeetings = true;
+      if (String(r.get("price_rule") || "").startsWith("gift_lite") || String(r.get("הערות") || "").includes(GIFT_LITE_NOTE)) e.lite = true;
     }
   }
 
@@ -167,7 +171,7 @@ export async function checkVoucher(rawCode: unknown, maxAgeMs = 60_000): Promise
   const e = index.get(code);
   if (e?.redeemed) return { ...base, status: "redeemed", names: e.names || listed?.coupleNames || null, released: e.released, fromList: !!listed };
   if (listed) return { ...base, status: "valid", names: listed.coupleNames, released: true, fromList: true };
-  if (e?.gift) return { ...base, status: "valid", names: e.names, released: e.released, allMeetings: e.allMeetings };
+  if (e?.gift) return { ...base, status: "valid", names: e.names, released: e.released, allMeetings: e.allMeetings, lite: !e.allMeetings && !!e.lite };
   return base;
 }
 

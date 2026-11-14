@@ -11,6 +11,7 @@ import type { OrderRecord } from "./_attribution_core.js";
 import { postbackSale, computeCommission } from "./_affiliate.js";
 import { withLock } from "./_bg.js";
 import { ga4PurchaseFromOrder, ga4ServerWillSend, sendGa4Purchase } from "./_ga4.js";
+import { tierOfRule } from "./_price_table.js";
 // capiPurchase lives in _meta-capi.ts (no gift-release imports), so scripts/capi-retry.ts can reuse it.
 import { capiPurchase } from "./_meta-capi.js";
 export { capiPurchase };
@@ -102,8 +103,8 @@ export async function alert(kind: string, ids: Record<string, string | null | un
   }
 }
 
-function plan(o: OrderRecord): "kit" | "kit_all_meetings" | "gift" {
-  return o.order_kind === "gift" ? "gift" : o.all_meetings ? "kit_all_meetings" : "kit";
+function plan(o: OrderRecord): "kit" | "kit_all_meetings" | "kit_lite" | "gift" {
+  return o.order_kind === "gift" ? "gift" : o.all_meetings ? "kit_all_meetings" : tierOfRule(o.price_rule) === "lite" ? "kit_lite" : "kit";
 }
 
 async function step(store: Store, o: OrderRecord, name: string, fn: () => Promise<Partial<OrderRecord> | void>): Promise<OrderRecord> {

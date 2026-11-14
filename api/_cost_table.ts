@@ -53,7 +53,8 @@ export function fixedPerOrder(ordersPerMonth: number, withVercelPro = false): nu
 // ---------------------------------------------------------------------------------------------
 
 export type Basis = "conservative" | "lean";
-export type Meetings = 8 | 11;
+/** 4 = the lite kit (199, from 14.11.2026), 8 = the regular kit, 11 = the full kit. */
+export type Meetings = 4 | 8 | 11;
 
 export interface PageCounts {
   /** Pages of the couple booklet (colour, duplex). */
@@ -122,14 +123,19 @@ export const CYBERCAMP_2026_11: RateCard = {
   },
   make_per_order: 0,                             // PLAN.md:315 (Make Free; Grow says Make is free on every plan, CONCLUSIONS.md:229)
   default_pages: {
+    // Lite (4 meetings): no lite kit has been printed yet, so this is a straight-line estimate from the 8 and 11
+    // means (couple 7.6 pages and personal 6.7 pages per meeting, plus the fixed front and back matter). UNVERIFIED
+    // until the first lite kit's pdfinfo; replace with the real counts then.
+    4: { couple: 41.0, personal: 34.1 },
     8: { couple: 71.4, personal: 60.9 },         // PLAN.md:318 (pdfinfo means over pilot/print-ready)
     11: { couple: 94.2, personal: 81.0 },        // PLAN.md:319 (newest kits run 100-102 pages, may be about 5 low)
   },
   default_print: {
+    4: 83.8,                                     // estimate: 41.0/2*1.5 + 2*34.1/2*0.5 + 3*12 = 83.8 (UNVERIFIED, see default_pages)
     8: 120.0,                                    // PLAN.md:318; 71.4/2*1.5 + 2*60.9/2*0.5 + 3*12 = 120.0
     11: 147.2,                                   // PLAN.md:319; 94.2/2*1.5 + 2*81.0/2*0.5 + 3*12 = 147.15, PLAN rounds to 147.2
   },
-  list_price: { 8: 349, 11: 410 },               // website/api/_price_table.ts:40 (PRICES_2026_11, confirmed 2.11.2026)
+  list_price: { 4: 199, 8: 349, 11: 410 },       // website/api/_price_table.ts (PRICES_2026_11, confirmed 2.11.2026; lite 199 from 14.11.2026)
 };
 
 /** Every card, oldest first. Add a new card (never edit an old one) when Ran or Grow change prices. */
@@ -313,13 +319,14 @@ export const WORKING_TARGET_CAC_ILS = 75;
 /** Before 10 paid orders the dashboard uses the 8-meeting break-even (PLAN.md:340). */
 export const MIX_WEIGHTED_MIN_ORDERS = 10;
 
-/** Order-mix-weighted break-even (PLAN.md:340): falls back to the 8-meeting value below 10 paid kits. */
-export function weightedBreakEvenCac(kits8: number, kits11: number, basis: Basis = "conservative"): number {
-  const n = Math.max(0, kits8) + Math.max(0, kits11);
+/** Order-mix-weighted break-even (PLAN.md:340): falls back to the 8-meeting value below 10 paid kits. kits4 = lite kits (14.11.2026). */
+export function weightedBreakEvenCac(kits8: number, kits11: number, basis: Basis = "conservative", kits4 = 0): number {
+  const n = Math.max(0, kits8) + Math.max(0, kits11) + Math.max(0, kits4);
   if (n < MIX_WEIGHTED_MIN_ORDERS) return breakEvenCac(8, basis);
+  const c4 = costFor({ kind: "kit", meetings: 4 }, { basis }).contribution_ils;
   const c8 = costFor({ kind: "kit", meetings: 8 }, { basis }).contribution_ils;
   const c11 = costFor({ kind: "kit", meetings: 11 }, { basis }).contribution_ils;
-  return Math.round((Math.max(0, kits8) * c8 + Math.max(0, kits11) * c11) / n);
+  return Math.round((Math.max(0, kits4) * c4 + Math.max(0, kits8) * c8 + Math.max(0, kits11) * c11) / n);
 }
 
 // ---------------------------------------------------------------------------------------------

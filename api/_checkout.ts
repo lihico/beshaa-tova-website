@@ -3,6 +3,7 @@
  * Shared by api/order.ts, api/gift.ts and api/pay-retry.ts.
  */
 import { LEGACY_UUID_RE, isIsraeliMobile, type OrderRecord } from "./_attribution_core.js";
+import { tierOfRule } from "./_price_table.js";
 import { payments, paymentProviderSetting, paymentsEnabled, type CreatePaymentInput } from "./_payments.js";
 import { GrowPagesAdapter, growPagesConfigFromEnv } from "./_payments_grow_pages.js";
 import { growMakeConfigFromEnv } from "./_payments_grow_make.js";
@@ -57,7 +58,7 @@ export function paymentInputFor(o: OrderRecord): CreatePaymentInput {
     description: kind === "gift" ? `Beshaa Tova gift ${o.order_id}` : `Beshaa Tova kit ${o.order_id}`,
     buyer: { name: o.buyer.name.replace(/\s+/g, " ").trim(), phone: o.buyer.phone, email: o.buyer.email },
     kind,
-    catalogNumber: kind === "gift" ? "gift" : o.all_meetings ? "kit_all" : "kit",
+    catalogNumber: kind === "gift" ? "gift" : o.all_meetings ? "kit_all" : tierOfRule(o.price_rule) === "lite" ? "kit_lite" : "kit",
     cFields: {
       cField1: o.order_id,
       cField2: visitorHex(o.visitor_id),

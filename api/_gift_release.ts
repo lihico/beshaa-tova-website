@@ -5,7 +5,7 @@
 // sheet so a second click never sends again.
 import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 import { Resend } from "resend";
-import { getOrderDoc } from "./_sheets.js";
+import { getOrderDoc, GIFT_ALL_MEETINGS_NOTE, GIFT_LITE_NOTE } from "./_sheets.js";
 import { MAIN_TAB, CODE_HEADER, VOUCHER_SENT_HEADER, normalizeVoucherCode, invalidateVoucherCache } from "./_voucher_lookup.js";
 import { buildVoucherHtml, buildRedeemUrl, waLink, coupleVoucherMessage, giverVoucherMessage } from "./_voucher.js";
 import { buildVoucherQr, renderVoucherPdf } from "./_voucher-pdf.js";
@@ -92,6 +92,8 @@ export interface GiftRowInfo {
   coupleName2: string;
   blessing: string;
   released: boolean;
+  /** The kit the voucher pays for, from price_rule or the notes mark (4 / 8 / 11; 14.11.2026). */
+  meetings?: 4 | 8 | 11;
 }
 
 async function findGiftRow(code: string) {
@@ -117,6 +119,12 @@ function rowInfo(code: string, found: Awaited<ReturnType<typeof findGiftRow>>): 
     coupleName2: get("שם 2"),
     blessing: get("ברכה"),
     released: get(VOUCHER_SENT_HEADER).toUpperCase() === "TRUE",
+    meetings: (() => {
+      const rule = get("price_rule"), notes = get("הערות");
+      if (rule.startsWith("gift_lite") || notes.includes(GIFT_LITE_NOTE)) return 4 as const;
+      if (rule.startsWith("gift_all") || notes.includes(GIFT_ALL_MEETINGS_NOTE)) return 11 as const;
+      return 8 as const;
+    })(),
   };
 }
 
@@ -218,7 +226,7 @@ async function releaseOnce(code: string, input: ReleaseExtras): Promise<ReleaseR
   };
 
   const qrDataUri = await buildVoucherQr(code);
-  const voucherHtml = buildVoucherHtml({ coupleName1: info.coupleName1, coupleName2: info.coupleName2, giverName: info.giverName, blessing: info.blessing, code, qrDataUri });
+  const voucherHtml = buildVoucherHtml({ coupleName1: info.coupleName1, coupleName2: info.coupleName2, giverName: info.giverName, blessing: info.blessing, code, qrDataUri, meetings: info.meetings });
   const pdf = await renderVoucherPdf(voucherHtml);
   if (!pdf) {
     await unlock();

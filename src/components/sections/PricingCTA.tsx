@@ -2,6 +2,8 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { FadeIn } from "@/components/motion";
 import { MessageCircle } from "lucide-react";
+import { trackCta } from "@/lib/behavior";
+import { partnerShareHref } from "@/lib/share";
 
 type PricingCTAProps = {
   orderSearch?: string;
@@ -29,16 +31,28 @@ export function PricingCTA({ orderSearch = "", conversion = false }: PricingCTAP
 
           <div className="flex flex-col items-center gap-2.5">
             <Button size="lg" className="w-full max-w-[280px] text-base shadow-md shadow-terracotta-200/40" asChild>
-              <Link to={orderHref}>להזמנה עבורנו</Link>
+              <Link to={orderHref} onClick={() => trackCta("order", "pricing")}>להזמנה עבורנו</Link>
             </Button>
             <Button variant="outline" size="lg" className="w-full max-w-[280px] text-base" asChild>
-              <Link to="/give-a-gift">להזמנה כשובר מתנה</Link>
+              <Link to="/give-a-gift" onClick={() => trackCta("gift", "pricing")}>להזמנה כשובר מתנה</Link>
             </Button>
           </div>
+
+          {/* H4 (Lihi, 14.11.2026) */}
+          <a
+            href={partnerShareHref()}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => trackCta("share_partner", "pricing")}
+            className="mt-3 inline-block text-sm font-medium text-terracotta-600 underline underline-offset-4 hover:text-terracotta-500"
+          >
+            לשלוח לבן או בת הזוג
+          </a>
 
           <div className="mt-6">
             <a
               href="https://wa.me/972502023669"
+              onClick={() => trackCta("whatsapp", "pricing")}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 text-[0.8rem] text-muted-foreground transition-colors hover:text-terracotta-600"

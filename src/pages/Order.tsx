@@ -14,6 +14,8 @@ import { captureAttribution, getAttribution, getAttributionState, getGaClientId,
 import { type OrderResponse, readOrderResponse, isPaymentUrl, goToPayment, rememberOrder } from "@/lib/payment";
 import { NEW_PRICES, PRICES, quoteNow } from "@/lib/prices";
 import { consentForOrder } from "@/lib/consent";
+import { errorReason, trackCta, trackFormDone, trackFormError, trackFormStep, trackPriceSeen, useSeenOnce } from "@/lib/behavior";
+import { partnerShareHref } from "@/lib/share";
 import { FRIEND_CODES_10PCT } from "../../api/_friend_codes_10pct";
 
 const ease = [0.25, 0.1, 0.25, 1] as const;
@@ -187,6 +189,8 @@ export default function Order() {
   const [expandedMeeting, setExpandedMeeting] = useState<string | null>(null);
 
   const [agreedToTerms, setAgreedToTerms] = useState(debug);
+  // U4 (Lihi, 14.11.2026): notes and the voucher code fold under "עוד פרטים (לא חובה)"; open when a code came in the link.
+  const [showExtras, setShowExtras] = useState(debug || hasPromoParam);
 
   // Gift flow state
   const [giverName, setGiverName] = useState(debug ? "דנה בדיקה" : "");
@@ -212,6 +216,10 @@ export default function Order() {
   const [giftResult, setGiftResult] = useState<OrderResponse | null>(null);
   const [couplePhoto, setCouplePhoto] = useState<string | null>(null);
   const [couplePhotoName, setCouplePhotoName] = useState<string | null>(null);
+
+  // M2 (Lihi, 14.11.2026): a message that stopped the submit, as a fixed reason key (never the typed value).
+  useEffect(() => { if (error) trackFormError("self", errorReason(error)); }, [error]);
+  useEffect(() => { if (giftError) trackFormError("gift", errorReason(giftError)); }, [giftError]);
 
   // Local promos (STUDENT2026, "<couple>-gift") are known here; partner codes are recognised by
   // /api/voucher-check ("promo"), see serverPromo below (docs/attribution 4.3 item 6).
@@ -311,7 +319,7 @@ export default function Order() {
     if (email.trim() && !isValidEmail(email)) { setError("כתובת המייל לא תקינה."); return; }
     if (!isCafePickup && (!city.trim() || !street.trim())) { setError("נא למלא כתובת למשלוח (עיר ורחוב)."); return; }
     if (!isCafePickup && !lastName.trim()) { setError("נא למלא שם משפחה למשלוח."); return; }
-    if (!isCafePickup && !zipCode.trim()) { setError("נא למלא מיקוד."); return; }
+    // U4: the zip code is optional ("אם לא יודעים, נשלים בשבילכם").
     if (selectedMeetings.length === 0) { setError("נא לבחור לפחות מפגש אחד."); return; }
     if (!agreedToTerms) { setError("נא לאשר את תנאי השימוש."); return; }
     if (voucherKey && !isPromoCode && (isVoucherRedeem || voucherKey.length >= 6)) {
@@ -337,6 +345,7 @@ export default function Order() {
 
   const handleConfirm = async () => {
     if (submitting) return;
+    trackFormDone("self");
     const orderValue = selfQuote.amount;
 
     // Lead fires only after /api/order answers, with the server's id (lead_<order_id>); the
@@ -456,6 +465,7 @@ export default function Order() {
 
   const handleGiftConfirm = async () => {
     if (giftSubmitting) return;
+    trackFormDone("gift");
     // Same pattern as handleConfirm: Lead after the server answers, Purchase only after payment.
     setGiftSubmitting(true);
     setGiftError("");
@@ -580,6 +590,7 @@ export default function Order() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, ease }}
         className="px-6 py-24 md:py-32"
+        data-clarity-mask="true"
       >
         <div className="mx-auto max-w-md">
           <h1 className="mb-2 text-center text-2xl font-bold text-foreground">לפני שנשלח - בואו נוודא</h1>
@@ -674,6 +685,7 @@ export default function Order() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease }}
         className="px-6 py-24 md:py-32"
+        data-clarity-mask="true"
       >
         <div className="mx-auto max-w-md text-center">
           <div className="mx-auto mb-6 h-28 w-28">
@@ -731,6 +743,7 @@ export default function Order() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, ease }}
         className="px-6 py-24 md:py-32"
+        data-clarity-mask="true"
       >
         <div className="mx-auto max-w-md">
           <h1 className="mb-2 text-center text-2xl font-bold text-foreground">לפני שנשלח - בואו נוודא</h1>
@@ -844,6 +857,7 @@ export default function Order() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease }}
         className="px-6 py-24 md:py-32"
+        data-clarity-mask="true"
       >
         <div className="mx-auto max-w-md text-center">
           <div className="mx-auto mb-6 h-28 w-28">
@@ -1030,6 +1044,13 @@ export default function Order() {
           </button>
         </div>
         )}
+        {/* O3 (Lihi, 14.11.2026) */}
+        {!isVoucherRedeem && !isCafePickup && (
+          <p className="-mt-6 mb-10 text-center text-sm text-muted-foreground">
+            הכי מתאים כששניכם רוצים. עוד לא בטוחים?{" "}
+            <a href={partnerShareHref()} target="_blank" rel="noopener noreferrer" onClick={() => trackCta("share_partner", "order")} className="font-medium text-terracotta-600 underline underline-offset-4">לשלוח לבן או בת הזוג</a>
+          </p>
+        )}
 
         {/* Voucher redeem banner */}
         {isVoucherRedeem && (
@@ -1065,7 +1086,7 @@ export default function Order() {
           className="space-y-8"
         >
           {/* Names + Gender */}
-          <section className="space-y-4 rounded-xl border border-border/60 bg-warm-gray-50 p-6">
+          <section className="space-y-4 rounded-xl border border-border/60 bg-warm-gray-50 p-6" onFocusCapture={() => trackFormStep("self", "names")}>
             <h2 className="text-lg font-semibold text-foreground">שמות בני הזוג</h2>
             <div className="space-y-5">
               <div className="space-y-2">
@@ -1096,7 +1117,7 @@ export default function Order() {
           </section>
 
           {/* Phone + Wedding Date */}
-          <section className="space-y-4 rounded-xl border border-border/60 bg-warm-gray-50 p-6">
+          <section className="space-y-4 rounded-xl border border-border/60 bg-warm-gray-50 p-6" onFocusCapture={() => trackFormStep("self", "contact")}>
             <h2 className="text-lg font-semibold text-foreground">פרטי התקשרות</h2>
             <p className="text-sm text-muted-foreground">ניצור איתכם קשר בוואטסאפ למספר הזה.</p>
             <div className="relative">
@@ -1125,7 +1146,7 @@ export default function Order() {
           </section>
 
           {/* Shipping Address */}
-          <section className="space-y-4 rounded-xl border border-border/60 bg-warm-gray-50 p-6">
+          <section className="space-y-4 rounded-xl border border-border/60 bg-warm-gray-50 p-6" onFocusCapture={() => trackFormStep("self", "address")}>
             {isCafePickup ? (
               <>
                 <h2 className="text-lg font-semibold text-foreground">איסוף בבית קפה</h2>
@@ -1166,8 +1187,8 @@ export default function Order() {
                 <Input id="city" value={city} onChange={(e) => setCity(e.target.value)} placeholder="למשל: תל אביב" required />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="zipCode">מיקוד</Label>
-                <Input id="zipCode" value={zipCode} onChange={(e) => setZipCode(e.target.value)} placeholder="למשל: 6120101" required />
+                <Label htmlFor="zipCode">מיקוד{" "}<span className="font-normal text-muted-foreground">(לא חובה)</span></Label>
+                <Input id="zipCode" value={zipCode} onChange={(e) => setZipCode(e.target.value)} placeholder="אם לא יודעים, נשלים בשבילכם" />
               </div>
             </div>
             {expressAvailable && (
@@ -1190,7 +1211,7 @@ export default function Order() {
           </section>
 
           {/* Meetings */}
-          <section className="space-y-4 rounded-xl border border-border/60 bg-warm-gray-50 p-6">
+          <section className="space-y-4 rounded-xl border border-border/60 bg-warm-gray-50 p-6" onFocusCapture={() => trackFormStep("self", "meetings")} onClickCapture={() => trackFormStep("self", "meetings")}>
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-foreground">בחירת מפגשים</h2>
               {!allMeetings && (
@@ -1248,8 +1269,65 @@ export default function Order() {
             </div>
           </section>
 
-          {/* Free Text + Modest Language */}
+          {/* Referral Source */}
           <section className="space-y-4 rounded-xl border border-border/60 bg-warm-gray-50 p-6">
+            <h2 className="text-lg font-semibold text-foreground">איך שמעת עלינו?</h2>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { value: "facebook", label: "פייסבוק" },
+                { value: "instagram", label: "אינסטגרם" },
+                { value: "friend", label: "חבר/ה" },
+                { value: "whatsapp", label: "קבוצת ווטסאפ" },
+                { value: "cafe", label: "בית קפה" },
+                { value: "print", label: "מודעה מודפסת" },
+                { value: "newsletter", label: "ניוזלטר" },
+                { value: "event", label: "ערב או הרצאה" },
+                { value: "other", label: "אחר" },
+              ].map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => { setReferralSource(referralSource === option.value ? "" : option.value); if (option.value !== "other" && option.value !== "cafe") setReferralOther(""); }}
+                  className={`rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${
+                    referralSource === option.value
+                      ? "border-terracotta-400 bg-terracotta-500 text-white"
+                      : "border-border bg-background text-muted-foreground hover:border-terracotta-200"
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+            {(referralSource === "other" || referralSource === "cafe") && (
+              <Input
+                value={referralOther}
+                onChange={(e) => setReferralOther(e.target.value)}
+                placeholder="ספרו לנו..."
+                className="mt-2"
+              />
+            )}
+          </section>
+
+          {/* U4 (Lihi, 14.11.2026): what is not required folds away; the label names what is inside, so a religious
+              or married couple still finds the matching box. DRAFT he copy: awaiting Lihi (approved as proposed). */}
+          <div className="space-y-4">
+            <button
+              type="button"
+              data-testid="extras-toggle"
+              aria-expanded={showExtras}
+              onClick={() => setShowExtras((v) => !v)}
+              className="flex w-full items-center justify-between gap-3 rounded-xl border border-border/60 bg-white px-5 py-4 text-right transition-colors hover:border-terracotta-200"
+            >
+              <span>
+                <span className="block text-base font-semibold text-foreground">עוד פרטים (לא חובה)</span>
+                <span className="mt-0.5 block text-xs text-muted-foreground">התאמה לזוג דתי, אחרי החתונה, הערות{!isVoucherRedeem ? " וקוד שובר" : ""}</span>
+              </span>
+              <ChevronDown className={`h-5 w-5 shrink-0 text-terracotta-500 transition-transform ${showExtras ? "rotate-180" : ""}`} />
+            </button>
+            {showExtras && (
+            <>
+          {/* Free Text + Modest Language */}
+          <section className="space-y-4 rounded-xl border border-border/60 bg-warm-gray-50 p-6" onFocusCapture={() => trackFormStep("self", "extras")}>
             <h2 className="text-lg font-semibold text-foreground">הערות והתאמה אישית</h2>
             <p className="text-sm text-muted-foreground">מעבר לבחירת המפגשים - אפשר לבקש כאן כל התאמה שחשובה לכם. רגישות מסוימת, דגש שחשוב לקחת בחשבון, עניין שקרוב לליבכם שהיינו רוצים להתעמק בו - כל מה שיעזור לי להתאים את התוכן עבורכם. לא חובה.</p>
             <label className="flex cursor-pointer items-start gap-3">
@@ -1305,48 +1383,9 @@ export default function Order() {
             )}
           </section>
 
-          {/* Referral Source */}
-          <section className="space-y-4 rounded-xl border border-border/60 bg-warm-gray-50 p-6">
-            <h2 className="text-lg font-semibold text-foreground">איך שמעת עלינו?</h2>
-            <div className="flex flex-wrap gap-2">
-              {[
-                { value: "facebook", label: "פייסבוק" },
-                { value: "instagram", label: "אינסטגרם" },
-                { value: "friend", label: "חבר/ה" },
-                { value: "whatsapp", label: "קבוצת ווטסאפ" },
-                { value: "cafe", label: "בית קפה" },
-                { value: "print", label: "מודעה מודפסת" },
-                { value: "newsletter", label: "ניוזלטר" },
-                { value: "event", label: "ערב או הרצאה" },
-                { value: "other", label: "אחר" },
-              ].map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  onClick={() => { setReferralSource(referralSource === option.value ? "" : option.value); if (option.value !== "other" && option.value !== "cafe") setReferralOther(""); }}
-                  className={`rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${
-                    referralSource === option.value
-                      ? "border-terracotta-400 bg-terracotta-500 text-white"
-                      : "border-border bg-background text-muted-foreground hover:border-terracotta-200"
-                  }`}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-            {(referralSource === "other" || referralSource === "cafe") && (
-              <Input
-                value={referralOther}
-                onChange={(e) => setReferralOther(e.target.value)}
-                placeholder="ספרו לנו..."
-                className="mt-2"
-              />
-            )}
-          </section>
-
           {/* Voucher Code */}
           {!isVoucherRedeem && (
-          <section className="space-y-3 rounded-xl border border-dashed border-terracotta-200 bg-terracotta-50/30 p-6">
+          <section className="space-y-3 rounded-xl border border-dashed border-terracotta-200 bg-terracotta-50/30 p-6" onFocusCapture={() => trackFormStep("self", "code")}>
             <h2 className="text-base font-semibold text-foreground">הכנסת קוד שובר</h2>
             <p className="text-sm text-muted-foreground">אם קיבלתם קוד שובר כמתנה שרכשו עבורכם או כהנחה, הזינו אותו כאן.</p>
             <Input value={voucherCode} onChange={(e) => setVoucherCode(e.target.value)} placeholder="למשל: YAEL-TOMER-2609" />
@@ -1355,6 +1394,10 @@ export default function Order() {
             {!isPromoCode && voucherStatus === "redeemed" && <p className="text-sm text-red-600">{VOUCHER_REDEEMED_MSG}</p>}
           </section>
           )}
+
+            </>
+            )}
+          </div>
 
           {error && <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">{error}</p>}
 
@@ -1386,6 +1429,13 @@ export default function Order() {
             promoLabel={isPromoCode ? activePromo.label : null}
           />
           ))}
+          {/* O3 (Lihi, 14.11.2026): one quote next to the price, word for word (marketing/testimonials.md, לירון). */}
+          {!isVoucherRedeem && !isGiftVoucher && (
+            <figure className="-mt-4 rounded-xl border border-terracotta-100 bg-white px-5 py-4 text-right">
+              <blockquote className="text-sm leading-relaxed text-foreground/90">&quot;אני חושבת שמה שכל כך מדהים בזה זה ההירתמות של שנינו להתרכז רק בזה משהו שחששתי ממנו כי הקשב שלנו קצר הרבה פעמים&quot;</blockquote>
+              <figcaption className="mt-1.5 text-xs font-semibold text-muted-foreground">לירון</figcaption>
+            </figure>
+          )}
 
           <Button size="lg" type="submit" className="w-full text-base">
             {freeVoucher ? "שליחת הטופס" : "להזמנה (תשלום לאחר מכן)"}
@@ -1406,7 +1456,7 @@ export default function Order() {
           onSubmit={handleGiftSubmit}
           className="space-y-8"
         >
-          <section className="space-y-4 rounded-xl border border-border/60 bg-warm-gray-50 p-6">
+          <section className="space-y-4 rounded-xl border border-border/60 bg-warm-gray-50 p-6" onFocusCapture={() => trackFormStep("gift", "giver")}>
             <h2 className="text-lg font-semibold text-foreground">הפרטים שלך</h2>
             <div className="space-y-4">
               <div className="space-y-2">
@@ -1426,7 +1476,7 @@ export default function Order() {
             </div>
           </section>
 
-          <section className="space-y-4 rounded-xl border border-border/60 bg-warm-gray-50 p-6">
+          <section className="space-y-4 rounded-xl border border-border/60 bg-warm-gray-50 p-6" onFocusCapture={() => trackFormStep("gift", "couple")}>
             <h2 className="text-lg font-semibold text-foreground">שמות בני הזוג</h2>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
@@ -1440,13 +1490,13 @@ export default function Order() {
             </div>
           </section>
 
-          <section className="space-y-4 rounded-xl border border-border/60 bg-warm-gray-50 p-6">
+          <section className="space-y-4 rounded-xl border border-border/60 bg-warm-gray-50 p-6" onFocusCapture={() => trackFormStep("gift", "blessing")} data-clarity-mask="true">
             <h2 className="text-lg font-semibold text-foreground">רוצה לצרף כמה מילים?</h2>
             <p className="text-sm text-muted-foreground">ברכה קצרה שתצורף עם המתנה. לא חובה.</p>
             <input type="text" value={blessing} onChange={(e) => setBlessing(e.target.value)} placeholder="למשל: בשעה טובה! שתמיד תמשיכו לדבר..." className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none transition-colors focus:border-terracotta-300" />
           </section>
 
-          <section className="space-y-4 rounded-xl border border-border/60 bg-warm-gray-50 p-6">
+          <section className="space-y-4 rounded-xl border border-border/60 bg-warm-gray-50 p-6" data-clarity-mask="true">
             <h2 className="text-lg font-semibold text-foreground">רוצה לצרף תמונה של הזוג?</h2>
             <p className="text-sm text-muted-foreground">התמונה תגיע אלינו יחד עם ההזמנה - נשמח להכיר. לא חובה.</p>
             {!couplePhoto ? (
@@ -1640,8 +1690,10 @@ function KitValueBox({ dates, amount, express, fullPrice = null, promoLabel = nu
   dates: number; amount: number; express: number; fullPrice?: number | null; promoLabel?: string | null; gift?: boolean;
 }) {
   const perDate = Math.round((amount - express) / dates);
+  // M2: "saw the price"; M1: the price stays readable in Clarity recordings (numbers are masked by default).
+  const seen = useSeenOnce<HTMLDivElement>(() => trackPriceSeen(gift ? "gift_box" : "order_box"), 0.5);
   return (
-    <div className="rounded-xl border border-terracotta-200/60 bg-terracotta-50/40 px-6 py-6 text-center" data-testid="kit-value">
+    <div ref={seen} className="rounded-xl border border-terracotta-200/60 bg-terracotta-50/40 px-6 py-6 text-center" data-testid="kit-value" data-clarity-unmask="true">
       <p className="text-4xl font-bold text-terracotta-600">{dates} דייטים</p>
       <p className="mt-2 text-balance text-lg font-semibold leading-snug text-foreground">
         ששמים במרכז השולחן את הדברים החשובים באמת {gift ? "לזוג שאתם אוהבים" : "לזוגות"}

@@ -37,7 +37,7 @@ export default defineConfig({
     screenshot: "only-on-failure",
   },
   projects: [
-    { name: "failures", testMatch: /(j6-failures|j9-grow-light|j10-debug)\.spec\.ts$/ },
+    { name: "failures", testMatch: /(j6-failures|j9-grow-light|j10-debug|j11-site-[a-z]+)\.spec\.ts$/ },
     { name: "setup", testMatch: /reset\.setup\.ts$/, dependencies: ["failures"] },
     { name: "journeys", testMatch: /(j[1-578]-[a-z0-9-]+|z-report)\.spec\.ts$/, dependencies: ["setup"] },
   ],

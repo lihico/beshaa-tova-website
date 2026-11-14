@@ -14,7 +14,7 @@ export function MeetLihiV2() {
               <div className="absolute -inset-2 rounded-full bg-gradient-to-br from-terracotta-200/50 to-pink-200/50 blur-sm" />
               <img
                 src="/illustrations/about-ketubah-signing.png"
-                alt="ליהי ונתיב חותמים על כתובה אישית"
+                alt="ליהי ובן הזוג שלה חותמים על הכתובה האישית שלהם"
                 className="relative h-28 w-28 rounded-full border-2 border-white object-cover shadow-lg md:h-32 md:w-32"
               />
             </div>

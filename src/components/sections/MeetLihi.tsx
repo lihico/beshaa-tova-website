@@ -12,7 +12,7 @@ export function MeetLihi() {
               alt=""
               className="absolute -inset-6 h-[calc(100%+48px)] w-[calc(100%+48px)] object-contain opacity-20"
             />
-            <img src="/illustrations/about-ketubah-signing.png" alt="ליהי ונתיב חותמים על כתובה אישית" className="relative h-48 w-48 rounded-xl object-cover md:h-56 md:w-56" />
+            <img src="/illustrations/about-ketubah-signing.png" alt="ליהי ובן הזוג שלה חותמים על הכתובה האישית שלהם" className="relative h-48 w-48 rounded-xl object-cover md:h-56 md:w-56" />
           </FadeIn>
           <FadeIn delay={0.15}>
             <h2 className="mb-4 text-2xl font-bold text-foreground md:text-3xl">נעים מאוד. אני ליהי.</h2>

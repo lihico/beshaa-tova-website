@@ -31,6 +31,7 @@ interface ConsentGlobals {
   Event?: new (type: string) => unknown;
   fbq?: (...args: unknown[]) => void;
   gtag?: (...args: unknown[]) => void;
+  clarity?: (...args: unknown[]) => void;
 }
 
 const g = globalThis as unknown as ConsentGlobals;
@@ -82,6 +83,11 @@ export function setConsent(choice: ConsentChoice, now: number = Date.now()): voi
   } catch { /* ignore */ }
   try {
     g.gtag?.("consent", "update", consentModeFields(choice));
+  } catch { /* ignore */ }
+  // M1 (Lihi, 14.11.2026): Clarity follows the bar; "denied" erases its cookies and stops them.
+  try {
+    if (choice === "granted") g.clarity?.("consent");
+    else g.clarity?.("consent", false);
   } catch { /* ignore */ }
 }
 

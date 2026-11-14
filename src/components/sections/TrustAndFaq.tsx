@@ -17,7 +17,8 @@ const topQuestions = [
     a: "חימום יצירתי, חלק אישי (כל אחד כותב לבד), וחלק זוגי עם שיתוף, תרגילים ושיח פתוח. כל מפגש לוקח בין שעה לשעה וחצי. כולל רקע מחקרי קצר שנותן הקשר - בלי להרגיש הרצאה.",
   },
   {
-    q: "בן/בת הזוג שלי פחות מהסוג של לשבת ולדבר על רגשות",
+    // F6 (Lihi, 14.11.2026): "שלי" dropped (banned phrase list)
+    q: "בן/בת הזוג פחות מהסוג של לשבת ולדבר על רגשות",
     a: "בדיוק בשביל זה התרגילים מגוונים. יש מדדים פשוטים, כרטיסיות בחירה, טבלאות, משחקי ניחוש ואפילו ציורים. לא רק כתיבה חופשית. בנוסף, בכל מפגש יש חלק אישי שנותן זמן לעבד לבד - לפני שמשתפים.",
   },
   {
@@ -30,32 +31,41 @@ const topQuestions = [
   },
 ];
 
-export function TrustAndFaq() {
+/**
+ * part: "both" (default), "lihi" = only "מי מאחורי הערכה?", "faq" = only the questions.
+ * U2 (Lihi, 14.11.2026): on the home page the story moves up, right after the quotes, so it is a separate block there.
+ */
+export function TrustAndFaq({ part = "both" }: { part?: "both" | "lihi" | "faq" }) {
+  const showLihi = part !== "faq";
+  const showFaq = part !== "lihi";
   return (
-    <section className="relative bg-gradient-to-b from-terracotta-50/50 via-white to-warm-gray-50 px-5 py-7 md:py-10" style={{ overflowX: "clip" }}>
+    <section className={`relative bg-gradient-to-b from-terracotta-50/50 via-white to-warm-gray-50 px-5 md:py-10 ${part === "lihi" ? "py-6" : "py-7"}`} style={{ overflowX: "clip" }}>
       <div className="pointer-events-none absolute left-0 top-8 h-64 w-64 translate-x-16 rounded-full bg-terracotta-100/20 blur-3xl" />
 
       <div className="relative mx-auto max-w-2xl">
         {/* Meet Lihi */}
+        {showLihi && (
         <FadeIn>
-          <div className="mb-10 flex flex-col items-center gap-5 text-center sm:flex-row sm:gap-7 sm:text-right">
+          <div className={`${showFaq ? "mb-10" : ""} flex flex-col items-center gap-5 text-center sm:flex-row sm:gap-7 sm:text-right`}>
             <div className="relative shrink-0">
               <div className="absolute -inset-2 rounded-full bg-gradient-to-br from-terracotta-200/50 to-pink-200/50 blur-sm" />
               <img
                 src="/illustrations/about-ketubah-signing.webp"
-                alt="ליהי ונתיב חותמים על כתובה אישית"
+                alt="ליהי ובן הזוג שלה חותמים על הכתובה האישית שלהם"
                 loading="lazy"
                 className="relative h-28 w-28 rounded-full border-2 border-white object-cover shadow-lg md:h-32 md:w-32"
               />
             </div>
             <div className="max-w-md">
               <h3 className="mb-2 text-xl font-bold text-foreground md:text-2xl">מי מאחורי הערכה?</h3>
+              {/* S1 (Lihi, 14.11.2026) */}
               <p className="text-[0.95rem] leading-relaxed text-muted-foreground">
-                אני <span className="font-semibold text-foreground">ליהי</span>,{" "}דוקטורנטית לפסיכולוגיה קלינית באוניברסיטת בר-אילן.
-                לפני שנה התחתנתי, ובתקופה שלפני קבענו לעצמנו דייט שבועי - בכל פעם נושא אחר. השיחות צבעו את החודשים של לפני החתונה, ואת האירוע עצמו, בצבע אחר.
+                אני <span className="font-semibold text-foreground">ליהי</span>, פסיכולוגית ודוקטורנטית לפסיכולוגיה בבר-אילן.
+                לפני החתונה שלנו קבענו לעצמנו דייט בכל שבוע, כל פעם על נושא אחר: כסף, חלומות, חיכוכים, הבית.
+                את מה שגילינו הפכנו לכתובה אישית, והיא תלויה אצלנו בסלון עד היום.
               </p>
               <p className="mt-2.5 text-[0.95rem] leading-relaxed text-muted-foreground">
-                זה היה כל כך משמעותי עבורנו, שחיפשתי כלי שמתרגם את המחקר למשהו שזוגות יוכלו לעשות לבד - מובנה, חם, ובגובה העיניים. לא מצאתי.{" "}
+                חיפשתי כלי שמתרגם את המחקר על זוגיות למשהו שזוגות יכולים לעשות לבד: מובנה, חם ובגובה העיניים. לא מצאתי.{" "}
                 <span className="font-bold text-terracotta-600">אז בניתי אחד.</span>
               </p>
               <Link
@@ -67,8 +77,10 @@ export function TrustAndFaq() {
             </div>
           </div>
         </FadeIn>
+        )}
 
         {/* FAQ */}
+        {showFaq && (
         <FadeIn delay={0.1}>
           <h2 className="mb-5 text-center text-xl font-bold text-foreground md:text-2xl">
             שאלות נפוצות
@@ -96,6 +108,7 @@ export function TrustAndFaq() {
             </Link>
           </div>
         </FadeIn>
+        )}
       </div>
     </section>
   );

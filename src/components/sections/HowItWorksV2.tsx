@@ -14,7 +14,8 @@ const steps = [
   {
     img: "/illustrations/step-questionnaire.webp",
     title: "ממלאים שאלון קצר",
-    text: "מזינים שמות, בוחרים 5-8 נושאים מתוך בנק של 10.",
+    // W1 (Lihi, 14.11.2026): the real numbers of the form (8 or all 11).
+    text: "בוחרים 8 מפגשים או את כל 11, ואת הנושאים שמדברים אליכם.",
   },
   {
     img: "/illustrations/step-kit.webp",

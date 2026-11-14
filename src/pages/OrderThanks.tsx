@@ -142,7 +142,9 @@ export default function OrderThanks({ cancelled = false }: { cancelled?: boolean
   const coupleText = couple.length === 2 ? `${couple[0]} ו${couple[1]}` : "הזוג";
 
   return (
+    // M1 (Lihi, 14.11.2026): names and amounts on this screen never reach Clarity recordings.
     <motion.div
+      data-clarity-mask="true"
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease }}

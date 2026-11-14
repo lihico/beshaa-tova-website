@@ -1,6 +1,15 @@
 import { Link } from "react-router-dom";
 import { FadeIn } from "@/components/motion";
 import { Button } from "@/components/ui/button";
+import { Star } from "lucide-react";
+import { trackCta } from "@/lib/behavior";
+import { TrackSection } from "@/components/TrackSection";
+
+// G4 (Lihi, 14.11.2026): two quotes about the kit as a gift, word for word (marketing/testimonials.md, mit4mit).
+const GIFT_QUOTES = [
+  { name: "שחר", text: "הערכה היא מתנה ענקית לכל זוג!!!" },
+  { name: "אלמוג", text: "זו מתנה מצוינת לעצמנו ואנחנו ממליצים בחום!!" },
+];
 
 const steps = [
   {
@@ -67,9 +76,20 @@ export default function GiftGive() {
             />
             <div className="mt-8">
               <Button size="lg" className="text-base shadow-md shadow-terracotta-200/40" asChild>
-                <Link to="/order?flow=gift">לשליחת שובר מתנה</Link>
+                <Link to="/order?flow=gift" onClick={() => trackCta("gift_order", "gift_voucher")}>לשליחת שובר מתנה</Link>
               </Button>
             </div>
+            <TrackSection name="gift_quotes" page="gift">
+              <div className="mt-8 grid gap-3 text-right sm:grid-cols-2">
+                {GIFT_QUOTES.map((q) => (
+                  <figure key={q.name} className="rounded-2xl border border-terracotta-200/70 bg-white px-5 py-4 shadow-sm">
+                    <div className="mb-1.5 flex gap-0.5">{Array.from({ length: 5 }).map((_, i) => <Star key={i} className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />)}</div>
+                    <blockquote className="text-[0.98rem] font-medium leading-relaxed text-foreground/90">&quot;{q.text}&quot;</blockquote>
+                    <figcaption className="mt-2 text-sm font-semibold text-foreground">{q.name}</figcaption>
+                  </figure>
+                ))}
+              </div>
+            </TrackSection>
           </FadeIn>
         </div>
       </section>

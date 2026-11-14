@@ -1,11 +1,15 @@
+import { trackCta } from "@/lib/behavior";
+
 const PHONE = "972502023669";
-const MESSAGE = "שלום, אני פונה לגבי ״בשעה טובה״ - ערכת השיח לזוגות. אשמח לשמוע עוד פרטים.";
+// X2 (Lihi, 14.11.2026)
+const MESSAGE = "היי ליהי, אשמח לשמוע עוד על המפגשים הזוגיים של בשעה טובה.";
 const WHATSAPP_URL = `https://wa.me/${PHONE}?text=${encodeURIComponent(MESSAGE)}`;
 
 export function WhatsAppButton() {
   return (
     <a
       href={WHATSAPP_URL}
+      onClick={() => trackCta("whatsapp", "floating")}
       target="_blank"
       rel="noopener noreferrer"
       aria-label="שלחו לנו הודעה בוואטסאפ"

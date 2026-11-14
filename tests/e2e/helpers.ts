@@ -222,7 +222,11 @@ export async function fillSelfOrder(page: Page, b: SelfBuyer, opts: { chooseFlow
     await page.locator("#express").click();
     await expect(page.locator("#express")).toHaveAttribute("aria-checked", "true");
   }
-  if (opts.code) await page.getByPlaceholder("למשל: YAEL-TOMER-2609").fill(opts.code);
+  if (opts.code) {
+    // The code field folds under "עוד פרטים (לא חובה)" (U4, 14.11.2026).
+    await openExtras(page);
+    await page.getByPlaceholder("למשל: YAEL-TOMER-2609").fill(opts.code);
+  }
   if (opts.expectPrice !== undefined) {
     await expect(page.getByText(`${opts.expectPrice} ₪`, { exact: true }).first()).toBeVisible();
   }
@@ -231,6 +235,12 @@ export async function fillSelfOrder(page: Page, b: SelfBuyer, opts: { chooseFlow
   await expect(terms).toHaveAttribute("aria-checked", "true");
   await page.getByRole("button", { name: /להזמנה \(תשלום לאחר מכן\)|שליחת הטופס/ }).click();
   await page.getByRole("button", { name: "הכל נכון, שלחו!" }).click();
+}
+
+/** Opens "עוד פרטים (לא חובה)" on the order form when it is folded (notes, religious/married boxes, voucher code). */
+export async function openExtras(page: Page): Promise<void> {
+  const t = page.getByTestId("extras-toggle");
+  if ((await t.count()) && (await t.getAttribute("aria-expanded")) !== "true") await t.click();
 }
 
 export interface GiftGiver { giverName: string; giverPhone: string; giverEmail: string; couple1: string; couple2: string }

@@ -107,7 +107,8 @@ export function WhatsInside({ conversion = false }: { conversion?: boolean }) {
             {conversion ? "על מה מדברים בכל מפגש?" : "על מה מדברים בכל דייט?"}
           </h2>
           <p className="mx-auto mb-4 max-w-sm text-center text-sm leading-relaxed text-muted-foreground">
-            {conversion ? "בוחרים עד 8 נושאים - כל אחד הופך לערב זוגי אצלכם" : "בוחרים עד 8 נושאים שמעניינים אתכם"}
+            {/* W3 (Lihi, 14.11.2026) */}
+            {conversion ? "בוחרים 8 או 11 מפגשים. כל אחד הופך לערב זוגי אצלכם." : "בוחרים 8 או 11 מפגשים, על הנושאים שמעניינים אתכם."}
           </p>
         </FadeIn>
 

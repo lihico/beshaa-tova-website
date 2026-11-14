@@ -1,9 +1,27 @@
-import { useState, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState } from "react";
 import { FadeIn } from "@/components/motion";
-import { Star, ChevronLeft, ChevronRight } from "lucide-react";
+import { Star, ChevronDown } from "lucide-react";
+import { trackCta } from "@/lib/behavior";
 
+// Q2 (Lihi, 14.11.2026): four quotes word for word from marketing/testimonials.md ("..." = a cut, no word changed),
+// first, because most phones show only the first ones. The older (edited) quotes stay after them (Q3: she keeps them).
 const cards = [
+  {
+    name: "עומר",
+    text: "...7 שנים ביחד והרגשתי ש**כבר דיברנו על הכל** אבל בזכות השאלות והחוברות האישיות הצלחנו לגעת עוד יותר לעומק בנושאים חשובים",
+  },
+  {
+    name: "לירון",
+    text: "...בשפות אהבה שנינו מאוד טעינו וזה הפתיע אותנו מאוד אחרי 6 שנים של זוגיות אבל זה ממש עזר לנו לדייק ולהבין פתאום **שאנחנו לא יודעים הכל אחד על השני**…",
+  },
+  {
+    name: "עומר",
+    text: "זה נתן לנו עוד פרספקטיבה **לדברים שכבר דיברנו עליהם** אבל רק בזכות המפגש נכנסנו לעומקים שלא הגענו אליהם אף פעם",
+  },
+  {
+    name: "שחר",
+    text: "שמחנו שזה גרם לנו לדבר על הדברים **בצורה מסודרת**. לעבור תהליך חיובי.",
+  },
   {
     name: "שחר",
     text: "בדרך לחתונה לפעמים שוכחים לעצור רגע ולדבר על הדברים החשובים באמת. **חוויה מדהימה** - אפילו הייתי ממליצה בתור מתנה לזוג שמתחתן.",
@@ -66,12 +84,6 @@ function Stars({ conversion }: { conversion?: boolean }) {
   );
 }
 
-const contentVariants = {
-  enter: { opacity: 0, x: 20 },
-  center: { opacity: 1, x: 0 },
-  exit: { opacity: 0, x: -20 },
-};
-
 /** תמונות שזוגות שלחו מהמפגשים שלהם. */
 const photos = [
   { src: "/recommendations/beach.jpg", alt: "מפגש של זוג על שפת הים", position: "center 72%" },
@@ -80,27 +92,31 @@ const photos = [
   { src: "/recommendations/poolside.jpg", alt: "מפגש ליד הבריכה", position: "center 45%" },
 ];
 
+/** U1 (Lihi, 14.11.2026): three quotes open, the rest behind "עוד ציטוטים", instead of the one-at-a-time carousel. */
+const VISIBLE = 3;
+
+function QuoteCard({ name, text, conversion }: { name: string; text: string; conversion?: boolean }) {
+  return (
+    <figure className="relative overflow-hidden rounded-2xl border border-terracotta-200/70 bg-gradient-to-br from-terracotta-50/60 to-white px-5 py-5 shadow-[0_10px_30px_-12px_rgba(168,86,56,0.25)] md:px-7">
+      <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-l from-terracotta-300 via-terracotta-400 to-terracotta-300" />
+      <span aria-hidden="true" className="pointer-events-none absolute -top-2 right-3 select-none font-serif text-[4.2rem] leading-none text-terracotta-200/80">&rdquo;</span>
+      {/* Q2 note: five stars on every review */}
+      <div className="relative mb-2.5"><Stars conversion={conversion} /></div>
+      <blockquote className="relative text-[1rem] font-medium leading-relaxed text-foreground/90 md:text-[1.06rem]">{formatBold(text)}</blockquote>
+      <figcaption className="mt-3 text-sm font-semibold text-foreground">{name}</figcaption>
+    </figure>
+  );
+}
+
 export function SocialProof({ conversion = false }: { conversion?: boolean }) {
-  const [active, setActive] = useState(0);
-
-  const prev = () => setActive((active - 1 + cards.length) % cards.length);
-  const next = () => setActive((active + 1) % cards.length);
-
-  const touchStartX = useRef<number | null>(null);
-  const handleTouchStart = (e: React.TouchEvent) => { touchStartX.current = e.touches[0].clientX; };
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (touchStartX.current === null) return;
-    const dx = e.changedTouches[0].clientX - touchStartX.current;
-    touchStartX.current = null;
-    if (Math.abs(dx) < 40) return;
-    if (dx > 0) next(); else prev();
-  };
+  const [showAll, setShowAll] = useState(false);
+  const shown = showAll ? cards : cards.slice(0, VISIBLE);
 
   return (
     <section className="border-t border-warm-gray-100 bg-[#faf8f5] px-5 py-5 md:py-7">
       <div className="mx-auto max-w-2xl">
         <FadeIn>
-          <div className={`mb-5 flex items-center justify-center gap-2 ${conversion ? "flex-col sm:flex-row" : ""}`}>
+          <div className={`mb-5 flex items-center justify-center gap-2 ${conversion ? "flex-col" : ""}`}>
             {!conversion && (
               <img
                 src="/illustrations/mit4mit-logo.webp"
@@ -109,80 +125,31 @@ export function SocialProof({ conversion = false }: { conversion?: boolean }) {
                 className="h-5 w-auto"
               />
             )}
-            <p className={`font-medium text-terracotta-400 ${conversion ? "text-[0.95rem] tracking-normal text-foreground/90" : "text-[0.85rem] uppercase tracking-widest"}`}>
-              {conversion ? "מה אומרים הזוגות שעשו את הערכה?" : "מה אומרים זוגות שכבר עברו את זה"}
-            </p>
+            {conversion ? (
+              <>
+                {/* Q1 (Lihi, 14.11.2026) */}
+                <h2 className="text-center text-xl font-bold text-foreground md:text-2xl">דיברתם על זה? לא ככה.</h2>
+                <p className="text-center text-[0.9rem] text-muted-foreground">מה כתבו זוגות אחרי המפגשים</p>
+              </>
+            ) : (
+              <p className="text-[0.85rem] font-medium uppercase tracking-widest text-terracotta-400">מה אומרים זוגות שכבר עברו את זה</p>
+            )}
           </div>
 
-          <div
-            className="relative overflow-hidden rounded-2xl border border-terracotta-200/70 bg-gradient-to-br from-terracotta-50/60 to-white px-6 py-6 shadow-[0_10px_30px_-12px_rgba(168,86,56,0.25)] md:px-7"
-            onTouchStart={handleTouchStart}
-            onTouchEnd={handleTouchEnd}
-          >
-            {/* פס טרקוטה עדין בראש הכרטיס */}
-            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-l from-terracotta-300 via-terracotta-400 to-terracotta-300" />
-            {/* גרש-פתיחה דקורטיבי */}
-            <span
-              aria-hidden="true"
-              className="pointer-events-none absolute -top-2 right-3 select-none font-serif text-[5rem] leading-none text-terracotta-200/80"
-            >
-              &rdquo;
-            </span>
-
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={active}
-                variants={contentVariants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                transition={{ duration: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
-              >
-                <div className="relative mb-3">
-                  <Stars conversion={conversion} />
-                </div>
-
-                <p className="relative text-[1.02rem] font-medium leading-relaxed text-foreground/90 md:text-[1.08rem]">
-                  {formatBold(cards[active].text)}
-                </p>
-
-                <div className="mt-5">
-                  <span className="text-sm font-semibold text-foreground">{cards[active].name}</span>
-                </div>
-              </motion.div>
-            </AnimatePresence>
-
-            <div className="mt-5 flex items-center justify-between border-t border-terracotta-100/70 pt-3">
+          <div className="space-y-3">
+            {shown.map((c, i) => <QuoteCard key={i} name={c.name} text={c.text} conversion={conversion} />)}
+          </div>
+          {!showAll && cards.length > VISIBLE && (
+            <div className="mt-4 text-center">
               <button
-                onClick={prev}
-                className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-warm-gray-100 hover:text-foreground"
-                aria-label="ביקורת קודמת"
+                type="button"
+                onClick={() => { setShowAll(true); trackCta("more_quotes", "quotes"); }}
+                className="inline-flex items-center gap-1.5 rounded-full border border-terracotta-200 bg-white px-5 py-2 text-sm font-semibold text-terracotta-600 shadow-sm transition-colors hover:bg-terracotta-50"
               >
-                <ChevronRight className="h-4 w-4" />
-              </button>
-
-              <div className="flex gap-1.5">
-                {cards.map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setActive(i)}
-                    className={`h-2 rounded-full transition-all ${
-                      i === active ? "w-5 bg-terracotta-400" : "w-2 bg-warm-gray-300"
-                    }`}
-                    aria-label={`ביקורת ${i + 1}`}
-                  />
-                ))}
-              </div>
-
-              <button
-                onClick={next}
-                className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-warm-gray-100 hover:text-foreground"
-                aria-label="ביקורת הבאה"
-              >
-                <ChevronLeft className="h-4 w-4" />
+                עוד ציטוטים <ChevronDown className="h-4 w-4" />
               </button>
             </div>
-          </div>
+          )}
 
           {/* תמונות אמיתיות שזוגות שלחו מהמפגשים שלהם */}
           <div className="mt-6">

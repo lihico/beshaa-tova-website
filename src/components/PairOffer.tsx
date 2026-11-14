@@ -29,10 +29,10 @@ export function PairOffer({ where, gift = false, title, children }: { where: str
       <ul className="mx-auto mt-3 max-w-sm divide-y divide-terracotta-100 text-[0.95rem]">
         {rows.map(({ a, b, q }) => (
           <li key={`${a}-${b}`} className="flex items-baseline justify-between gap-3 py-1.5" data-pair={`${TIER_MEETINGS[a]}+${TIER_MEETINGS[b]}`}>
-            <span className="text-right text-foreground">{gift ? "שני שוברים" : "שתי ערכות"}: {a === b ? `${TIER_MEETINGS[a]} מפגשים לכל זוג` : `${TIER_MEETINGS[a]} ו-${TIER_MEETINGS[b]} מפגשים`}</span>
+            <span className="text-right text-foreground">{gift ? "שני שוברים" : "שתי ערכות"}: <bdi>{TIER_MEETINGS[a]} + {TIER_MEETINGS[b]}</bdi> מפגשים</span>
             <span className="shrink-0 whitespace-nowrap">
-              <span className="me-1.5 text-sm text-muted-foreground/70 line-through" style={{ fontVariantNumeric: "tabular-nums" }}>{q.full} ₪</span>
-              <span className="font-extrabold text-terracotta-600" style={{ fontVariantNumeric: "tabular-nums" }}>{q.amount} ₪</span>
+              <span className="me-1.5 inline-block text-sm text-muted-foreground/70 line-through" style={{ fontVariantNumeric: "tabular-nums" }}>{q.full} ₪</span>
+              <span className="inline-block font-extrabold text-terracotta-600" style={{ fontVariantNumeric: "tabular-nums" }}>{q.amount} ₪</span>
             </span>
           </li>
         ))}

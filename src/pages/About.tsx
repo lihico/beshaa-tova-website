@@ -39,7 +39,7 @@ export default function About() {
             אנחנו ביחד כבר למעלה מעשור, והחתונה עצמה היא שמחה גדולה. אבל רצינו שהתקופה שלפניה
             תהיה גם תהליך: לעצור, לדבר על החיים המשותפים שלנו, ולעלות מדרגה בזוגיות.
           </p>
-          <figure className="mx-auto max-w-xs">
+          <figure className="mx-auto max-w-[260px]">
             <img
               src="/illustrations/about-wedding-prep.jpg"
               alt="ליהי בבוקר החתונה, מצולמת מהגב"

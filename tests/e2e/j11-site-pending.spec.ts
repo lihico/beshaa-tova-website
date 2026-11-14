@@ -49,6 +49,7 @@ test("J11e exact count: the ketubah is optional and counts; a fifth pick is refu
   await page.locator("#lastName").fill("בר");
   await page.locator("#street").fill("הרצל 10");
   await page.locator("#city").fill("חיפה");
+  await page.locator("#zipCode").fill("3303100");   // required again (U4 taken back, 15.11.2026)
   await page.locator("label", { hasText: "תנאי השימוש" }).locator("[role=checkbox]").click();
   await page.getByRole("button", { name: /להזמנה \(תשלום לאחר מכן\)/ }).click();
   await expect(page.getByText("נשארו עוד 1 מפגשים לבחור (בחרו 4).")).toBeVisible();

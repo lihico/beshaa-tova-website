@@ -2,7 +2,7 @@
  * J11: the site changes Lihi approved on 14.11.2026 (sheets_html/SITE_CHANGES_2026-11-14_answers.txt, "מאשרת").
  * Runs in the "failures" project: it may create a test order, so it stays away from the report journey.
  */
-import { test, expect, state } from "./helpers.ts";
+import { test, expect, fillMeetings, state } from "./helpers.ts";
 
 test("J11a home: new hero, share link, gift button to the gift page, quotes, story after quotes, behaviour events", async ({ page }) => {
   await page.goto("/");
@@ -75,6 +75,7 @@ test("J11c order form: extras folded, zip optional, review screen masked for Cla
   await page.locator("#street").fill("הרצל 10");
   await page.locator("#city").fill("חיפה");
   // no zip code
+  await fillMeetings(page);   // the pending set asks for exactly as many meetings as the kit (O2)
   const terms = page.locator("label", { hasText: "תנאי השימוש" }).locator("[role=checkbox]");
   await terms.click();
   await page.getByRole("button", { name: /להזמנה \(תשלום לאחר מכן\)/ }).click();

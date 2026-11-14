@@ -108,7 +108,7 @@ export function WhatsInside({ conversion = false }: { conversion?: boolean }) {
           </h2>
           <p className="mx-auto mb-4 max-w-sm text-center text-sm leading-relaxed text-muted-foreground">
             {/* W3 (Lihi, 14.11.2026) */}
-            {conversion ? "בוחרים 8 או 11 מפגשים. כל אחד הופך לערב זוגי אצלכם." : "בוחרים 8 או 11 מפגשים, על הנושאים שמעניינים אתכם."}
+            {conversion ? "בוחרים 4, 8 או 11 מפגשים. כל אחד הופך לערב זוגי אצלכם." : "בוחרים 4, 8 או 11 מפגשים, על הנושאים שמעניינים אתכם."}
           </p>
         </FadeIn>
 
@@ -123,7 +123,7 @@ export function WhatsInside({ conversion = false }: { conversion?: boolean }) {
               </span>
             ))}
             <span className="rounded-full bg-terracotta-500 px-3.5 py-1.5 text-[0.85rem] font-semibold text-white shadow-sm">
-              + הכתובה שלנו
+              + הכתובה שלנו (אם תרצו)
             </span>
           </div>
         </FadeIn>

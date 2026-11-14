@@ -8,6 +8,7 @@ import { TrustAndFaq } from "@/components/sections/TrustAndFaq";
 import { PricingCTA } from "@/components/sections/PricingCTA";
 import { FadeIn } from "@/components/motion";
 import { TrackSection } from "@/components/TrackSection";
+import { Navigate, useSearchParams } from "react-router-dom";
 
 /** מועבר לקישורי הזמנה (טופס הזמנה עם התאמות המרה). */
 const ORDER_CONVERSION = "?preview=conversion";
@@ -18,11 +19,23 @@ const ORDER_CONVERSION = "?preview=conversion";
  * U2: "מי מאחורי הערכה?" right after the quotes. M2: every block reports once when it is on screen (TrackSection).
  */
 export default function HomeV2() {
+  // Landing versions for ads (Lihi's question on H1, 14.11.2026): ?for= picks the opening; nothing else on the page
+  // changes, and ref / utm / fbclid stay in the address. Default (no ?for=) = engaged couples.
+  //   ?for=married  the hero speaks to married couples
+  //   ?for=gift     straight to the gift page, with the same parameters
+  const [params] = useSearchParams();
+  const audience = params.get("for");
+  if (audience === "gift") {
+    const rest = new URLSearchParams(params);
+    rest.delete("for");
+    const q = rest.toString();
+    return <Navigate to={`/give-a-gift${q ? `?${q}` : ""}`} replace />;
+  }
   return (
     <div className="bg-white">
       <TrackSection name="hero">
         <FadeIn delay={0}>
-          <HeroV2 conversion orderSearch={ORDER_CONVERSION} showChecklistIntro={false} />
+          <HeroV2 conversion orderSearch={ORDER_CONVERSION} showChecklistIntro={false} audience={audience === "married" ? "married" : "engaged"} />
         </FadeIn>
       </TrackSection>
       <TrackSection name="how">

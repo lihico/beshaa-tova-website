@@ -4,6 +4,9 @@ import { FadeIn } from "@/components/motion";
 import { MessageCircle } from "lucide-react";
 import { trackCta } from "@/lib/behavior";
 import { partnerShareHref } from "@/lib/share";
+import { TierLinks } from "@/components/TierPicker";
+import { PairOffer } from "@/components/PairOffer";
+import { trackPriceSeen, trackTierSelect, useSeenOnce } from "@/lib/behavior";
 
 type PricingCTAProps = {
   orderSearch?: string;
@@ -18,6 +21,7 @@ export function PricingCTA({ orderSearch = "", conversion = false }: PricingCTAP
       ? "/order?flow=gift"
       : `/order${orderSearch.startsWith("?") ? `${orderSearch}&` : "?"}flow=gift`;
 
+  const seen = useSeenOnce<HTMLDivElement>(() => trackPriceSeen("home_table"), 0.4);
   return (
     <section className="relative bg-gradient-to-b from-terracotta-50/80 via-terracotta-50/40 to-warm-gray-50 px-5 pb-12 pt-8 md:pb-14 md:pt-12" style={{ overflowX: "clip" }}>
       <div className="pointer-events-none absolute right-0 -top-12 h-72 w-72 -translate-x-24 rounded-full bg-terracotta-100/40 blur-3xl" />
@@ -25,6 +29,16 @@ export function PricingCTA({ orderSearch = "", conversion = false }: PricingCTAP
 
       <div className="relative mx-auto max-w-md text-center">
         <FadeIn>
+          {/* P1 (Lihi, 14.11.2026): the prices on the home page, three equal cards so the small kit stands out too.
+              P3: two kits with the second 25% off. DRAFT he copy: awaiting Lihi. */}
+          {conversion && (
+            <div ref={seen} className="mb-8" data-clarity-unmask="true">
+              <h2 className="mb-4 text-2xl font-bold text-foreground md:text-3xl">כמה מפגשים מתאימים לכם?</h2>
+              <TierLinks search={orderSearch} onPick={(t) => trackTierSelect("home", t)} />
+              <p className="mt-3 text-[0.85rem] text-muted-foreground">כל ערכה כוללת חוברת זוגית, שתי חוברות אישיות ומשלוח עד הבית</p>
+              <div className="mt-5"><PairOffer where="home" /></div>
+            </div>
+          )}
           <h2 className="mb-6 text-2xl font-bold text-foreground md:text-3xl">
             מוכנים להתחיל?
           </h2>

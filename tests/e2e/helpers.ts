@@ -206,8 +206,9 @@ export interface SelfBuyer { partner1: string; partner2: string; phone: string; 
 export const BUYER_DEFAULTS = { street: "הרצל 10", city: "תל אביב", zipCode: "6120101" };
 
 /** Fills the self order form (Order.tsx ids), optionally a code, ticks the terms and confirms. */
-export async function fillSelfOrder(page: Page, b: SelfBuyer, opts: { chooseFlow?: boolean; code?: string; expectPrice?: number; express?: boolean } = {}): Promise<void> {
+export async function fillSelfOrder(page: Page, b: SelfBuyer, opts: { chooseFlow?: boolean; code?: string; expectPrice?: number; express?: boolean; tier?: "lite" | "base" | "all" } = {}): Promise<void> {
   if (opts.chooseFlow !== false) await page.getByRole("button", { name: /אנחנו מזמינים לעצמנו/ }).click();
+  if (opts.tier) await page.locator(`[data-testid=tier-step] [data-tier=${opts.tier}]`).click();
   await page.locator("#partner1").fill(b.partner1);
   await page.getByRole("button", { name: "היא", exact: true }).first().click();
   await page.locator("#partner2").fill(b.partner2);
@@ -218,6 +219,7 @@ export async function fillSelfOrder(page: Page, b: SelfBuyer, opts: { chooseFlow
   await page.locator("#street").fill(BUYER_DEFAULTS.street);
   await page.locator("#city").fill(BUYER_DEFAULTS.city);
   await page.locator("#zipCode").fill(BUYER_DEFAULTS.zipCode);
+  await fillMeetings(page);
   if (opts.express) {
     await page.locator("#express").click();
     await expect(page.locator("#express")).toHaveAttribute("aria-checked", "true");
@@ -237,6 +239,17 @@ export async function fillSelfOrder(page: Page, b: SelfBuyer, opts: { chooseFlow
   await page.getByRole("button", { name: "הכל נכון, שלחו!" }).click();
 }
 
+/** Picks meetings until the counter is full (O2, 14.11.2026: exactly as many as the kit; 11 needs nothing). */
+export async function fillMeetings(page: Page): Promise<void> {
+  const counter = page.getByTestId("meeting-counter");
+  for (let i = 0; i < 12; i++) {
+    if (!(await counter.count())) return;
+    const m = /(\d+)\/(\d+)/.exec(await counter.innerText());
+    if (!m || Number(m[1]) >= Number(m[2])) return;
+    await page.locator("[data-meeting-id][aria-pressed=false]").first().click();
+  }
+}
+
 /** Opens "עוד פרטים (לא חובה)" on the order form when it is folded (notes, religious/married boxes, voucher code). */
 export async function openExtras(page: Page): Promise<void> {
   const t = page.getByTestId("extras-toggle");
@@ -246,7 +259,7 @@ export async function openExtras(page: Page): Promise<void> {
 export interface GiftGiver { giverName: string; giverPhone: string; giverEmail: string; couple1: string; couple2: string }
 
 /** Fills the gift form (flow=gift already chosen), no wedding date yet, ticks the terms and confirms. */
-export async function fillGiftOrder(page: Page, g: GiftGiver, opts: { plan?: "base" | "all"; expectPrice?: number } = {}): Promise<void> {
+export async function fillGiftOrder(page: Page, g: GiftGiver, opts: { plan?: "lite" | "base" | "all"; expectPrice?: number } = {}): Promise<void> {
   await page.locator("#giverName").fill(g.giverName);
   await page.locator("#giverPhone").fill(g.giverPhone);
   await page.locator("#giverEmail").fill(g.giverEmail);

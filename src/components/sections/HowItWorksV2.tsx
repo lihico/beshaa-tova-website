@@ -14,8 +14,8 @@ const steps = [
   {
     img: "/illustrations/step-questionnaire.webp",
     title: "ממלאים שאלון קצר",
-    // W1 (Lihi, 14.11.2026): the real numbers of the form (8 or all 11).
-    text: "בוחרים 8 מפגשים או את כל 11, ואת הנושאים שמדברים אליכם.",
+    // W1 (Lihi, 14.11.2026): the real numbers of the form, with the lite kit (4).
+    text: "בוחרים 4, 8 או את כל 11 המפגשים, ואת הנושאים שמדברים אליכם.",
   },
   {
     img: "/illustrations/step-kit.webp",
@@ -27,6 +27,12 @@ const steps = [
     title: "מתחילים לדבר",
     text: "דייט אחד בשבוע, בזמן שלכם. בבית הקפה, בפארק או בסלון.",
   },
+];
+
+const BAND = [
+  { t: "זמן אישי, ואז שיחה", d: "כל מפגש מתחיל בכמה דקות של כל אחד עם החוברת שלו, ואז נפגשים לשיחה זוגית." },
+  { t: "הכל כתוב ומובנה", d: "שאלות, דוגמאות ותרגילים מוכנים. לא צריך מנחה, ולא צריך להמציא." },
+  { t: "מבוסס מחקר", d: "פותח על בסיס מחקר וידע בתחום הפסיכולוגיה והזוגיות." },
 ];
 
 export function HowItWorksV2() {
@@ -79,6 +85,21 @@ export function HowItWorksV2() {
             ))}
           </Stagger>
         </div>
+        {/* W2 (Lihi's note, 14.11.2026): the structure in one short band; "פותח על בסיס מחקר", not "written by Lihi".
+            DRAFT he copy: awaiting Lihi. */}
+        <FadeIn>
+          <div className="mx-auto mt-7 max-w-3xl rounded-2xl bg-[#faf6f1] px-5 py-5 md:mt-10 md:px-8">
+            <h3 className="mb-3 text-center text-lg font-bold text-foreground md:text-xl">רק שניכם. וכל השאר כבר מוכן.</h3>
+            <div className="grid gap-2.5 text-right md:grid-cols-3 md:gap-4">
+              {BAND.map((b) => (
+                <div key={b.t} className="rounded-xl bg-white px-4 py-3 shadow-sm">
+                  <p className="text-[0.95rem] font-bold text-terracotta-700">{b.t}</p>
+                  <p className="mt-0.5 text-[0.88rem] leading-relaxed text-muted-foreground">{b.d}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </FadeIn>
       </div>
     </section>
   );

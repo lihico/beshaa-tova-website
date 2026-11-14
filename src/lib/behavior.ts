@@ -118,3 +118,9 @@ export function errorReason(message: string): string {
   for (const [re, key] of table) if (re.test(message)) return key;
   return "other";
 }
+
+/** The kit chosen in the order form (O1): lite / base / all. Lets GA4 show how often lite is picked, and at whose expense. */
+export function trackTierSelect(form: "self" | "gift" | "home" | "gift_page", tier: string): void {
+  gtagEvent("select_tier", { form, tier });
+  clarity("set", "tier", tier);
+}

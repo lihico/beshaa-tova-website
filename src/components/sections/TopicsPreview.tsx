@@ -23,7 +23,7 @@ export function TopicsPreview() {
             על מה מדברים?
           </h2>
           <p className="mx-auto mb-7 max-w-sm text-center text-sm leading-relaxed text-muted-foreground">
-            בוחרים עד 8 נושאים שמעניינים אתכם
+            בוחרים 4, 8 או 11 מפגשים שמעניינים אתכם
           </p>
         </FadeIn>
 

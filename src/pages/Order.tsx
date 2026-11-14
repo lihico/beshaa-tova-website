@@ -16,6 +16,9 @@ import { NEW_PRICES, PRICES, quoteNow } from "@/lib/prices";
 import { consentForOrder } from "@/lib/consent";
 import { errorReason, trackCta, trackFormDone, trackFormError, trackFormStep, trackPriceSeen, useSeenOnce } from "@/lib/behavior";
 import { partnerShareHref } from "@/lib/share";
+import { TierPicker, TIER_COPY, sellableTiers } from "@/components/TierPicker";
+import { TIER_MEETINGS, isKitTier, kitPrice, type KitTier } from "../../api/_price_table";
+import { trackTierSelect } from "@/lib/behavior";
 import { FRIEND_CODES_10PCT } from "../../api/_friend_codes_10pct";
 
 const ease = [0.25, 0.1, 0.25, 1] as const;
@@ -28,7 +31,7 @@ const PAYMENT_LINK_BY_WHATSAPP = true;
 // are never shown with the new price table (NEW_PRICES=1), whatever PAYMENT_LINK_BY_WHATSAPP says.
 const SHOW_LEGACY_PAY_LINKS = !PAYMENT_LINK_BY_WHATSAPP && !NEW_PRICES;
 
-const MAX_MEETINGS = 7;
+// O1/O2 (Lihi, 14.11.2026): the kit decides how many meetings to pick: 4 (lite), 8, or all 11 (TIER_MEETINGS).
 
 // All prices come from one table (src/lib/prices.ts -> api/_price_table.ts), shared with the server.
 const ALL_MEETINGS_PAYBOX_URL = "https://links.payboxapp.com/q94p1IMvK1b";   // 370, 2026-10 prices only
@@ -68,10 +71,16 @@ const MEETINGS = [
   { id: "08", title: "עתיד וחלומות", description: "מורידים את הציניות, משתיקים את ה\"איך\", ונותנים מקום לחלומות - גם הגדולים וגם השקטים - שהשגרה דוחקת הצידה. משתפים בהרפתקאות שנרצה לחוות ובונים ציר זמן משותף קדימה." },
   { id: "09", title: "ילדים והורות", description: "מנקים את רעשי הרקע של הסביבה, ומדברים על מה שאנחנו באמת מרגישים לגבי משפחה כשכל בחירה היא לגיטימית. משתפים איזה הורים נרצה להיות ואיך נשמור על הזוגיות בתוך השינוי." },
   { id: "10", title: "כשקשה", description: "מדברים על מה שעוצר אותנו מלבקש עזרה, ומגלים דרך \"הסיפור שלך מהצד שלי\" איך הצד השני חווה את הרגעים הקשים שלנו. כותבים \"מדריך למשתמש\" שמסביר למה כל אחד מאיתנו באמת זקוק כשקשה." },
-  { id: "13", title: "הכתובה שלנו", description: "מסתכלים אחורה על התהליך שעברנו ומתרגמים את התובנות להבטחות קטנות ומעשים קונקרטיים ליומיום. מגלים שגם בלי מסמך פורמלי, אנחנו יוצאים מכאן עם שפה משותפת שלא הייתה לנו קודם.", alwaysSelected: true },
+  // O2: the ketubah meeting is optional (only if they want it) and counts within the number.
+  { id: "13", title: "הכתובה שלנו", description: "מסתכלים אחורה על התהליך שעברנו ומתרגמים את התובנות להבטחות קטנות ומעשים קונקרטיים ליומיום. מגלים שגם בלי מסמך פורמלי, אנחנו יוצאים מכאן עם שפה משותפת שלא הייתה לנו קודם.", optional: true },
 ];
 
 const DEFAULT_SELECTION = ["02", "03", "06", "07", "13"];
+
+/** The starting selection for a kit: none for lite, today's five for 8, everything for 11. */
+function defaultSelection(t: KitTier): string[] {
+  return t === "all" ? MEETINGS.map((m) => m.id) : t === "lite" ? [] : DEFAULT_SELECTION;
+}
 
 type VoucherCheckStatus = "checking" | "valid" | "invalid" | "redeemed" | "error" | "promo";
 
@@ -166,8 +175,11 @@ export default function Order() {
   const [street, setStreet] = useState(debug ? "דיזנגוף 99" : "");
   const [apartment, setApartment] = useState(debug ? "4" : "");
   const [zipCode, setZipCode] = useState(debug ? "6120101" : "");
-  const [selectedMeetings, setSelectedMeetings] = useState<string[]>(debug ? ["02", "03", "05", "07", "08", "09"] : DEFAULT_SELECTION);
-  const [allMeetings, setAllMeetings] = useState(false);
+  // ?tier=lite|base|all from the home price cards (P1) or a gift link; only a tier the live table sells.
+  const tierParam = searchParams.get("tier");
+  const [tier, setTier] = useState<KitTier>(isKitTier(tierParam) && sellableTiers(initialFlow === "gift").includes(tierParam) ? tierParam : "base");
+  const allMeetings = tier === "all";
+  const [selectedMeetings, setSelectedMeetings] = useState<string[]>(debug ? ["02", "03", "05", "06", "07", "08", "09", "13"] : defaultSelection(isKitTier(tierParam) ? tierParam : "base"));
   const [express, setExpress] = useState(false);
   const [freeText, setFreeText] = useState(debug ? "בדיקת מערכת (debug)" : "");
   const [showFreeText, setShowFreeText] = useState(debug);
@@ -208,7 +220,8 @@ export default function Order() {
   const [giftNotes, setGiftNotes] = useState(debug ? "בדיקת מערכת (debug)" : "");
   const [showGiftNotes, setShowGiftNotes] = useState(debug);
   const [giftAgreedToTerms, setGiftAgreedToTerms] = useState(debug);
-  const [giftAll, setGiftAll] = useState(false);
+  const [giftTier, setGiftTier] = useState<KitTier>(isKitTier(tierParam) && sellableTiers(true).includes(tierParam) ? tierParam : "base");
+  const giftAll = giftTier === "all";
   const [giftError, setGiftError] = useState("");
   const [giftReview, setGiftReview] = useState(false);
   const [giftSubmitted, setGiftSubmitted] = useState(false);
@@ -224,11 +237,11 @@ export default function Order() {
   // Local promos (STUDENT2026, "<couple>-gift") are known here; partner codes are recognised by
   // /api/voucher-check ("promo"), see serverPromo below (docs/attribution 4.3 item 6).
   const isLocalPromo = !!getPromo(voucherCode);
-  const promoFullPrice = allMeetings ? PRICES.all : PRICES.base;
+  const promoFullPrice = kitPrice(PRICES, tier);
   // Gift vouchers are checked on the server against the order sheet (21.10.2026); the format of a
   // BST- code alone no longer counts. api/order.ts checks again when the order arrives.
   const voucherKey = voucherCode.trim().toUpperCase();
-  const [voucherCheck, setVoucherCheck] = useState<{ code: string; status: VoucherCheckStatus; names: string | null; pct?: number | null; allMeetings?: boolean } | null>(null);
+  const [voucherCheck, setVoucherCheck] = useState<{ code: string; status: VoucherCheckStatus; names: string | null; pct?: number | null; allMeetings?: boolean; tier?: KitTier | null } | null>(null);
   useEffect(() => {
     if (!voucherKey || isLocalPromo || (!isVoucherRedeem && voucherKey.length < 6)) { setVoucherCheck(null); return; }
     let cancelled = false;
@@ -241,6 +254,7 @@ export default function Order() {
         if (!cancelled) setVoucherCheck({
           code: voucherKey, status, names: typeof j.names === "string" ? j.names : null,
           pct: typeof j.discount_pct === "number" ? j.discount_pct : null, allMeetings: j.all_meetings === true,
+          tier: isKitTier(j.tier) ? j.tier : null,
         });
       } catch {
         if (!cancelled) setVoucherCheck({ code: voucherKey, status: "error", names: null });
@@ -252,7 +266,7 @@ export default function Order() {
   const serverPromo = voucherStatus === "promo";
   const activePromo = getPromo(voucherCode) || (serverPromo ? promoFor(voucherCheck?.pct ?? PRICES.promoPct) : null);
   const isPromoCode = !!activePromo; // = isLocalPromo || serverPromo (kept as !!activePromo so TS narrows it)
-  const promoPrice = activePromo ? quoteNow({ kind: "order", allMeetings, discountPct: activePromo.pct }).kit : 0;
+  const promoPrice = activePromo ? quoteNow({ kind: "order", allMeetings, tier, discountPct: activePromo.pct }).kit : 0;
   const promoPayboxUrl = activePromo ? (allMeetings ? activePromo.allMeetingsPayboxUrl : activePromo.payboxUrl) : null;
   const looksLikeVoucher = isValidVoucher(voucherKey) || AUTO_VOUCHER_CODE.test(voucherKey);
   // If the check itself fails (network), let a voucher-shaped code through: the server re-checks and flags it.
@@ -262,43 +276,33 @@ export default function Order() {
   const freeVoucher = (isVoucherRedeem && !linkVoucherBad) || isGiftVoucher;
   // A full-kit gift voucher (/api/voucher-check all_meetings) comes with all 11 meetings.
   const voucherAllMeetings = freeVoucher && voucherStatus === "valid" && voucherCheck?.allMeetings === true;
+  // A lite voucher (14.11.2026) comes with 4 meetings; the kit of a voucher is fixed (the picker is locked).
+  const voucherTier: KitTier = voucherAllMeetings ? "all" : freeVoucher && voucherStatus === "valid" && voucherCheck?.tier === "lite" ? "lite" : "base";
   // Express shipping: only with the new price table, for a paid order that is shipped (not a cafe pickup).
   const expressAvailable = PRICES.express !== null && !isCafePickup && !freeVoucher;
   const expressOn = express && expressAvailable;
-  const selfQuote = quoteNow({ kind: "order", allMeetings, express: expressOn, discountPct: activePromo?.pct ?? 0, freeVoucher });
-  const giftQuote = quoteNow({ kind: "gift", allMeetings: giftAll });
+  const selfQuote = quoteNow({ kind: "order", allMeetings, tier, express: expressOn, discountPct: activePromo?.pct ?? 0, freeVoucher });
+  const giftQuote = quoteNow({ kind: "gift", allMeetings: giftAll, tier: giftTier });
+  const need = TIER_MEETINGS[tier];
+
+  const changeTier = (t: KitTier, track = true) => {
+    if (t !== tier) {
+      setSelectedMeetings((sel) => t === "all" ? MEETINGS.map((m) => m.id) : tier === "all" ? defaultSelection(t) : sel.slice(0, TIER_MEETINGS[t]));
+      setTier(t);
+    }
+    if (track) trackTierSelect("self", t);
+  };
 
   useEffect(() => {
-    if (voucherAllMeetings) {
-      setAllMeetings(true);
-      setSelectedMeetings(MEETINGS.map((m) => m.id));
-    } else if (isVoucherRedeem || isGiftVoucher) {
-      setAllMeetings(false);
-      setSelectedMeetings((prev) => prev.length === MEETINGS.length ? DEFAULT_SELECTION : prev);
-    }
-  }, [isGiftVoucher, isVoucherRedeem, voucherAllMeetings]);
+    if (isVoucherRedeem || isGiftVoucher) changeTier(voucherTier, false);
+  }, [isGiftVoucher, isVoucherRedeem, voucherTier]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleToggleMeeting = (id: string) => {
     if (allMeetings) return;
-    const meeting = MEETINGS.find((m) => m.id === id);
-    if (meeting?.alwaysSelected) return;
     setSelectedMeetings((prev) => {
       if (prev.includes(id)) return prev.filter((m) => m !== id);
-      const nonKetubah = prev.filter((m) => m !== "13");
-      if (nonKetubah.length >= MAX_MEETINGS) return prev;
+      if (prev.length >= need) return prev;
       return [...prev, id];
-    });
-  };
-
-  const handleToggleAllMeetings = () => {
-    setAllMeetings((prev) => {
-      const next = !prev;
-      if (next) {
-        setSelectedMeetings(MEETINGS.map((m) => m.id));
-      } else {
-        setSelectedMeetings(DEFAULT_SELECTION);
-      }
-      return next;
     });
   };
 
@@ -320,7 +324,11 @@ export default function Order() {
     if (!isCafePickup && (!city.trim() || !street.trim())) { setError("נא למלא כתובת למשלוח (עיר ורחוב)."); return; }
     if (!isCafePickup && !lastName.trim()) { setError("נא למלא שם משפחה למשלוח."); return; }
     // U4: the zip code is optional ("אם לא יודעים, נשלים בשבילכם").
-    if (selectedMeetings.length === 0) { setError("נא לבחור לפחות מפגש אחד."); return; }
+    // O2: exactly as many meetings as the kit.
+    if (!allMeetings && selectedMeetings.length !== need) {
+      setError(selectedMeetings.length < need ? `נשארו עוד ${need - selectedMeetings.length} מפגשים לבחור (בחרו ${need}).` : `אפשר לבחור ${need} מפגשים.`);
+      return;
+    }
     if (!agreedToTerms) { setError("נא לאשר את תנאי השימוש."); return; }
     if (voucherKey && !isPromoCode && (isVoucherRedeem || voucherKey.length >= 6)) {
       if (voucherStatus === "checking" || voucherStatus === null) { setError("רגע, עוד בודקים את קוד השובר. נסו שוב בעוד שנייה."); return; }
@@ -367,6 +375,7 @@ export default function Order() {
           : { city: city.trim(), street: street.trim(), apartment: apartment.trim() || null, zipCode: zipCode.trim(), lastName: lastName.trim() },
         meetings: selectedMeetings,
         allMeetings,
+        tier,
         express: expressOn,
         modestLanguage,
         shabbat: modestLanguage && shabbat,
@@ -416,7 +425,7 @@ export default function Order() {
     if (amount > 0) {
       gtagEvent("begin_checkout", {
         value: amount, currency: "ILS", order_id: result.order_id, flow: isVoucherRedeem ? "voucher_redeem" : "self",
-        items: [{ item_id: allMeetings ? "kit_all_meetings" : "kit", item_name: "couple_kit", price: amount, quantity: 1 }],
+        items: [{ item_id: allMeetings ? "kit_all_meetings" : tier === "lite" ? "kit_lite" : "kit", item_name: "couple_kit", price: amount, quantity: 1 }],
       });
     }
 
@@ -486,6 +495,7 @@ export default function Order() {
         notes: giftNotes.trim() || null,
         test: debug || undefined,
         giftAllMeetings: giftAll && PRICES.gift.all !== null,
+        giftTier,
         wantReceipt,
         ref: attribution.ref || null,
         utm: attribution.utm_source || attribution.utm_medium || attribution.utm_campaign ? attribution : null,
@@ -614,7 +624,7 @@ export default function Order() {
                 <p className="text-lg font-medium">{coupleName1Gift} ו{coupleName2Gift}</p>
                 <p>מועד חתונה: {weddingDateDisplay}</p>
                 {/* DRAFT he copy: awaiting Lihi */}
-                {PRICES.gift.all !== null && <p>{giftAll ? "ערכה מלאה, כל 11 המפגשים" : "ערכה של עד 8 מפגשים"} ({giftQuote.amount} ₪)</p>}
+                {PRICES.gift.all !== null && <p>{giftAll ? "ערכה מלאה, כל 11 המפגשים" : `ערכה של ${TIER_MEETINGS[giftTier]} מפגשים (${TIER_COPY[giftTier].label})`} ({giftQuote.amount} ₪)</p>}
               </div>
             </div>
 
@@ -795,6 +805,9 @@ export default function Order() {
               <h3 className="mb-2 text-sm font-semibold text-muted-foreground">מפגשים ({selectedMeetings.length})</h3>
               {allMeetings && (
                 <p className="mb-2 rounded-md bg-terracotta-100/60 px-3 py-1.5 text-xs font-semibold text-terracotta-700">כל 11 המפגשים</p>
+              )}
+              {tier === "lite" && (
+                <p className="mb-2 rounded-md bg-terracotta-100/60 px-3 py-1.5 text-xs font-semibold text-terracotta-700">לייט, 4 מפגשים</p>
               )}
               <div className="flex flex-wrap gap-1.5">
                 {meetingNames.map((name, i) => (
@@ -1085,6 +1098,16 @@ export default function Order() {
           onSubmit={handleSubmit}
           className="space-y-8"
         >
+          {/* O1 (Lihi, 14.11.2026): the kit and its price first, before any details. DRAFT he copy: awaiting Lihi. */}
+          <section className="space-y-3 rounded-xl border-2 border-terracotta-200 bg-white p-4 sm:p-6" data-testid="tier-step">
+            <h2 className="text-center text-lg font-bold text-foreground">כמה מפגשים?</h2>
+            {freeVoucher && voucherStatus === "valid" && (
+              <p className="text-center text-sm font-medium text-terracotta-700">השובר שלכם הוא ל-{TIER_MEETINGS[voucherTier]} מפגשים.</p>
+            )}
+            <TierPicker value={tier} onChange={(t) => changeTier(t)} locked={freeVoucher} />
+            <p className="text-center text-sm text-muted-foreground">{TIER_COPY[tier].sub}</p>
+          </section>
+
           {/* Names + Gender */}
           <section className="space-y-4 rounded-xl border border-border/60 bg-warm-gray-50 p-6" onFocusCapture={() => trackFormStep("self", "names")}>
             <h2 className="text-lg font-semibold text-foreground">שמות בני הזוג</h2>
@@ -1215,45 +1238,35 @@ export default function Order() {
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-foreground">בחירת מפגשים</h2>
               {!allMeetings && (
-                <span className="rounded-full bg-terracotta-100 px-3 py-1 text-xs font-medium text-terracotta-700">{selectedMeetings.filter(m => m !== "13").length}/{MAX_MEETINGS} נבחרו (+ כתובה)</span>
+                <span className="rounded-full bg-terracotta-100 px-3 py-1 text-xs font-medium text-terracotta-700" data-testid="meeting-counter">{selectedMeetings.length}/{need} נבחרו</span>
               )}
               {allMeetings && (
                 <span className="rounded-full bg-terracotta-500 px-3 py-1 text-xs font-medium text-white">כל 11 המפגשים</span>
               )}
             </div>
-            <p className="text-sm text-muted-foreground">בחרו 5-8 נושאים מתוך הבנק (מפגש הכתובה כלול תמיד). לחצו על החץ ליד כל מפגש כדי לקרוא עוד.</p>
+            {/* O2 (Lihi, 14.11.2026): one clear number; the ketubah meeting only if they want it. DRAFT he copy: awaiting Lihi. */}
+            <p className="text-sm text-muted-foreground">
+              {allMeetings
+                ? "כל 11 המפגשים כלולים. לחצו על החץ ליד כל מפגש כדי לקרוא עוד."
+                : `בחרו ${need} מפגשים. אפשר לבחור גם את מפגש הכתובה, אם תרצו. לחצו על החץ ליד כל מפגש כדי לקרוא עוד.`}
+            </p>
 
             {/* DRAFT he copy: awaiting Lihi */}
             {voucherAllMeetings && (
               <p className="rounded-lg bg-terracotta-100/60 px-4 py-3 text-sm font-medium text-terracotta-700">השובר שלכם כולל את כל 11 המפגשים.</p>
             )}
 
-            {/* All meetings toggle - hidden for gift voucher redemptions */}
-            {!isVoucherRedeem && !isGiftVoucher && (
-            <div
-              role="button" tabIndex={0}
-              onClick={handleToggleAllMeetings}
-              onKeyDown={(e) => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); handleToggleAllMeetings(); } }}
-              className={`flex cursor-pointer items-center gap-3 rounded-lg border-2 px-4 py-3.5 text-right transition-colors ${allMeetings ? "border-terracotta-500 bg-terracotta-50" : "border-dashed border-terracotta-300 bg-background hover:border-terracotta-400 hover:bg-terracotta-50/40"}`}
-            >
-              <span className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border transition-colors ${allMeetings ? "border-terracotta-500 bg-terracotta-500 text-white" : "border-terracotta-400"}`}>{allMeetings && <Check className="h-3 w-3" />}</span>
-              <span className="flex-1">
-                <span className="block text-sm font-semibold text-foreground">אנחנו רוצים את כל המפגשים</span>
-                <span className="mt-0.5 block text-xs text-muted-foreground">בעלות נוספת של {PRICES.all - PRICES.base} ₪</span>
-              </span>
-            </div>
-            )}
-
             <div className={`space-y-2 transition-opacity ${allMeetings ? "opacity-50" : ""}`}>
               {MEETINGS.map((meeting) => {
                 const isSelected = selectedMeetings.includes(meeting.id);
                 const isExpanded = expandedMeeting === meeting.id;
-                const isLocked = meeting.alwaysSelected || allMeetings;
+                const isLocked = allMeetings;
+                const isFull = !isSelected && !allMeetings && selectedMeetings.length >= need;
                 return (
                   <div key={meeting.id} className={`overflow-hidden rounded-lg border transition-colors ${isSelected ? "border-terracotta-400 bg-terracotta-50/50" : "border-border/60 bg-background hover:border-terracotta-200"}`}>
-                    <div role="button" tabIndex={0} onClick={() => handleToggleMeeting(meeting.id)} onKeyDown={(e) => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); handleToggleMeeting(meeting.id); } }} className={`flex items-center gap-3 px-4 py-3.5 text-right ${isLocked ? "cursor-default" : "cursor-pointer"}`}>
+                    <div role="button" tabIndex={0} data-meeting-id={meeting.id} aria-pressed={isSelected} onClick={() => handleToggleMeeting(meeting.id)} onKeyDown={(e) => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); handleToggleMeeting(meeting.id); } }} className={`flex items-center gap-3 px-4 py-3.5 text-right ${isLocked ? "cursor-default" : "cursor-pointer"} ${isFull ? "opacity-55" : ""}`}>
                       <span className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border transition-colors ${isSelected ? "border-terracotta-500 bg-terracotta-500 text-white" : "border-terracotta-300"}`}>{isSelected && <Check className="h-3 w-3" />}</span>
-                      <span className="flex-1 text-sm font-medium text-foreground">{meeting.title}{meeting.alwaysSelected && <span className="mr-2 text-xs font-normal text-terracotta-400">(כלול תמיד)</span>}</span>
+                      <span className="flex-1 text-sm font-medium text-foreground">{meeting.title}{meeting.optional && !allMeetings && <span className="mr-2 text-xs font-normal text-terracotta-400">(אם תרצו)</span>}</span>
                       <button type="button" onClick={(e) => handleToggleExpand(e, meeting.id)} className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-terracotta-100 hover:text-terracotta-600" aria-label={isExpanded ? "סגור תיאור" : "הצג תיאור"}>
                         <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`} />
                       </button>
@@ -1422,7 +1435,7 @@ export default function Order() {
           </div>
           ) : (
           <KitValueBox
-            dates={allMeetings ? 11 : 8}
+            dates={need}
             amount={selfQuote.amount}
             express={selfQuote.express}
             fullPrice={isPromoCode ? promoFullPrice + selfQuote.express : null}
@@ -1456,6 +1469,15 @@ export default function Order() {
           onSubmit={handleGiftSubmit}
           className="space-y-8"
         >
+          {/* O1 + H5 (Lihi, 14.11.2026): a voucher for 4, 8 or 11 meetings, chosen first. DRAFT he copy: awaiting Lihi. */}
+          {PRICES.gift.all !== null && (
+          <section className="space-y-3 rounded-xl border-2 border-terracotta-200 bg-white p-4 sm:p-6" data-testid="gift-tier-step">
+            <h2 className="text-center text-lg font-bold text-foreground">כמה מפגשים במתנה?</h2>
+            <TierPicker gift value={giftTier} onChange={(t) => { setGiftTier(t); trackTierSelect("gift", t); }} />
+            <p className="text-center text-sm text-muted-foreground">{TIER_COPY[giftTier].giftSub}</p>
+          </section>
+          )}
+
           <section className="space-y-4 rounded-xl border border-border/60 bg-warm-gray-50 p-6" onFocusCapture={() => trackFormStep("gift", "giver")}>
             <h2 className="text-lg font-semibold text-foreground">הפרטים שלך</h2>
             <div className="space-y-4">
@@ -1635,27 +1657,7 @@ export default function Order() {
 
           {giftError && <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">{giftError}</p>}
 
-          {PRICES.gift.all !== null && (
-          <section className="space-y-4 rounded-xl border border-border/60 bg-warm-gray-50 p-6">
-            {/* DRAFT he copy: awaiting Lihi (heading and both options) */}
-            <h2 className="text-lg font-semibold text-foreground">איזו ערכה במתנה?</h2>
-            <div className="space-y-3">
-              {([[false, `ערכה של עד 8 מפגשים - ${PRICES.gift.base} ₪`, "הזוג בוחר עד 7 נושאים, ומפגש הכתובה כלול תמיד"], [true, `ערכה מלאה, כל 11 המפגשים - ${PRICES.gift.all} ₪`, "כל הנושאים, בלי צורך לבחור"]] as Array<[boolean, string, string]>).map(([all, title, sub]) => (
-                <label key={String(all)} className="flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 transition-colors"
-                  style={{ borderColor: giftAll === all ? "var(--terracotta-400, #c2714f)" : undefined, backgroundColor: giftAll === all ? "var(--terracotta-50, #fdf5f2)" : undefined }}
-                  onClick={() => setGiftAll(all)} data-gift-plan={all ? "all" : "base"}
-                >
-                  <span className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${giftAll === all ? "border-terracotta-500" : "border-terracotta-300"}`}>
-                    {giftAll === all && <span className="block h-2 w-2 rounded-full bg-terracotta-500" />}
-                  </span>
-                  <span className="text-sm text-foreground"><span className="block font-medium">{title}</span><span className="block text-xs text-muted-foreground">{sub}</span></span>
-                </label>
-              ))}
-            </div>
-          </section>
-          )}
-
-          <KitValueBox dates={giftAll ? 11 : 8} amount={giftQuote.amount} express={0} gift />
+          <KitValueBox dates={TIER_MEETINGS[giftTier]} amount={giftQuote.amount} express={0} gift />
 
           <label className="flex cursor-pointer items-start gap-2.5">
             <span

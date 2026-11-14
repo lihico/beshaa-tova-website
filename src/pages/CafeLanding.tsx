@@ -335,7 +335,7 @@ export default function CafeLanding() {
                 </motion.div>
                 <h3 className="text-base font-bold">ערכת מפגשים מותאמת לכם</h3>
                 <p className={cn("mt-1 text-sm", styles.cardBody)}>
-                  5-8 נושאים לבחירה. המפגשים נעשים בקצב שלכם, באופן עצמאי.
+                  4, 8 או 11 מפגשים לבחירתכם. המפגשים נעשים בקצב שלכם, באופן עצמאי.
                 </p>
               </motion.div>
             </motion.div>
@@ -511,7 +511,7 @@ export default function CafeLanding() {
       <section className={cn("px-5 py-8 md:px-16 md:py-10", styles.sectionMuted)}>
         <div className="mx-auto max-w-2xl text-center">
           <h2 className="mb-1 text-lg font-bold md:text-xl">על מה מדברים?</h2>
-          <p className="mb-3 text-sm opacity-60">בוחרים 5-8 נושאים מתוך הרשימה.</p>
+          <p className="mb-3 text-sm opacity-60">בוחרים 4, 8 או 11 מפגשים מתוך הרשימה.</p>
           <Link to="/meetings" className={cn("text-sm font-medium underline underline-offset-4", styles.link)}>
             פירוט על הנושאים ←
           </Link>

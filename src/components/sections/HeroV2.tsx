@@ -14,9 +14,12 @@ type HeroV2Props = {
   showChecklistIntro?: boolean;
   /** שורה קטנה מתחת לכפתורים (למשל קוד הסטודנטים בעמוד הפלאייר, P4) */
   note?: ReactNode;
+  /** Landing version (?for=married on the home page). DRAFT he copy for "married": awaiting Lihi. */
+  audience?: "engaged" | "married";
 };
 
-export function HeroV2({ conversion = false, orderSearch = "", showChecklistIntro = true, note }: HeroV2Props) {
+export function HeroV2({ conversion = false, orderSearch = "", showChecklistIntro = true, note, audience = "engaged" }: HeroV2Props) {
+  const married = conversion && audience === "married";
   const orderHref = `/order${orderSearch}`;
   // H5 (Lihi, 14.11.2026): the gift button goes to the gift page (prices, the voucher, quotes), like the one at the bottom.
   const giftHref = "/give-a-gift";
@@ -29,7 +32,7 @@ export function HeroV2({ conversion = false, orderSearch = "", showChecklistIntr
         <div className="mx-auto w-full max-w-lg text-center md:max-w-2xl">
           {/* H1 (Lihi, 14.11.2026): the new message. DRAFT he copy approved as proposed; the "בטירוף של החיים" line was dropped to shorten the first screen. */}
           {conversion && (
-            <p className="mb-2 text-sm font-bold text-terracotta-600 md:mb-3 md:text-base">מסע זוגי עצמאי לפני החתונה</p>
+            <p className="mb-2 text-sm font-bold text-terracotta-600 md:mb-3 md:text-base">{married ? "זמן איכות זוגי, גם אחרי החתונה" : "מסע זוגי עצמאי לפני החתונה"}</p>
           )}
           <h1 className="mb-3 text-balance text-2xl font-extrabold leading-[1.15] tracking-tight text-foreground sm:text-[2rem] md:mb-5 md:text-5xl">
             {conversion ? (
@@ -44,7 +47,9 @@ export function HeroV2({ conversion = false, orderSearch = "", showChecklistIntr
 
           {conversion ? (
             <p className="mx-auto mb-4 text-pretty text-[0.95rem] font-medium leading-relaxed text-foreground md:mb-8 md:max-w-lg md:text-base">
-              לחתונה יש אולם, צלם ומפיק. <strong className="font-bold text-foreground">לשיחות על החיים שאתם בונים, צריך רק את שניכם.</strong>{" "}
+              {married
+                ? <>אחרי החתונה החיים ממשיכים מהר. <strong className="font-bold text-foreground">ערב רק לשניכם, על הדברים החשובים באמת.</strong>{" "}</>
+                : <>לחתונה יש אולם, צלם ומפיק. <strong className="font-bold text-foreground">לשיחות על החיים שאתם בונים, צריך רק את שניכם.</strong>{" "}</>}
               מפגשים מובנים, שמבוססים על מחקר ועל ידע בפסיכולוגיה של זוגיות, ואתם עושים לבד, בקצב שלכם.
             </p>
           ) : (
@@ -79,7 +84,7 @@ export function HeroV2({ conversion = false, orderSearch = "", showChecklistIntr
             </div>
             {/* H4 (Lihi, 14.11.2026) */}
             <a
-              href={partnerShareHref()}
+              href={married ? partnerShareHref("מצאתי משהו בשבילנו: מפגשים זוגיים, ערב רק לשנינו. מה דעתך?") : partnerShareHref()}
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => trackCta("share_partner", "hero")}
@@ -97,7 +102,7 @@ export function HeroV2({ conversion = false, orderSearch = "", showChecklistIntr
                 <span className="whitespace-nowrap">עד הבית</span>
               </span>
             </p>
-            {conversion && (
+            {conversion && !married && (
               <p className="text-[0.85rem] leading-snug text-muted-foreground">
                 <strong className="font-semibold text-foreground">כבר נשואים?</strong> גם בשבילכם: ערב רק לשניכם, על הדברים החשובים באמת.
               </p>

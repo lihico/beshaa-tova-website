@@ -1,5 +1,5 @@
 /** J7: a gift voucher redemption is a Lead, never a Purchase, and never reaches Grow. */
-import { test, expect, capiEvents, pixelEventId, pixelTracks, state } from "./helpers.ts";
+import { test, expect, capiEvents, fillMeetings, pixelEventId, pixelTracks, state } from "./helpers.ts";
 
 const CODE = "BST-TEST-0001";   // seeded as a paid gift in the file store (fixtures/vouchers.json)
 const BUYER = { partner1: "רוני", partner2: "עמית", phone: "0549998877", email: "j7@example.test", lastName: "שלום" };
@@ -19,6 +19,7 @@ test("J7 voucher redemption: free, Lead only, no Grow call", async ({ page }) =>
   await page.locator("#street").fill("הרצל 10");
   await page.locator("#city").fill("תל אביב");
   await page.locator("#zipCode").fill("6120101");
+  await fillMeetings(page);
   await expect(page.locator("#express"), "no express shipping on a voucher").toHaveCount(0);
   const terms = page.locator("label", { hasText: "תנאי השימוש" }).locator("[role=checkbox]");
   await terms.click();

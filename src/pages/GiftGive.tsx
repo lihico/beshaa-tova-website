@@ -4,6 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Star } from "lucide-react";
 import { trackCta } from "@/lib/behavior";
 import { TrackSection } from "@/components/TrackSection";
+import { TierLinks } from "@/components/TierPicker";
+import { PairOffer } from "@/components/PairOffer";
+import { trackPriceSeen, trackTierSelect, useSeenOnce } from "@/lib/behavior";
 
 // G4 (Lihi, 14.11.2026): two quotes about the kit as a gift, word for word (marketing/testimonials.md, mit4mit).
 const GIFT_QUOTES = [
@@ -30,6 +33,7 @@ const steps = [
 ];
 
 export default function GiftGive() {
+  const seen = useSeenOnce<HTMLDivElement>(() => trackPriceSeen("gift_page"), 0.4);
   return (
     <main className="bg-white">
       <section className="bg-gradient-to-b from-terracotta-50/60 to-white px-5 pb-8 pt-12 text-center md:pb-10 md:pt-16">
@@ -63,6 +67,25 @@ export default function GiftGive() {
         <p className="mx-auto mt-5 max-w-xl px-2 text-center text-sm leading-relaxed text-muted-foreground">
           את השובר אפשר לשלוח ישירות לזוג, או שתקבלו אותו אליכם ותמסרו בעצמכם.
         </p>
+      </section>
+
+      {/* G2 (Lihi's note, 14.11.2026): the prices, the cheapest (lite) included. G3: two couples, the second 25% off.
+          DRAFT he copy: awaiting Lihi. */}
+      <section className="px-5 pb-10">
+        <div ref={seen} className="mx-auto max-w-md text-center" data-clarity-unmask="true">
+          <h2 className="mb-4 text-xl font-bold text-foreground md:text-2xl">כמה מפגשים במתנה?</h2>
+          <TierLinks gift onPick={(t) => trackTierSelect("gift_page", t)} />
+          <p className="mt-3 text-[0.85rem] text-muted-foreground">כולל משלוח עד הבית של הזוג</p>
+          <div className="mt-6">
+            <PairOffer where="gift_page" gift title="עוד זוג חברים שמתחתן בקרוב?">
+              <figure className="mt-5 border-t border-terracotta-100 pt-4 text-right">
+                {/* Shachar, word for word from marketing/testimonials.md, cut at the start only (Lihi, 14.11.2026). */}
+                <blockquote className="text-[0.95rem] leading-relaxed text-foreground/90">&quot;ממליצה בתור מתנה לזוג שמתחתן, לתת שובר לערכות כדי שיזכרו לתת רגע לעצמם.&quot;</blockquote>
+                <figcaption className="mt-1.5 text-sm font-semibold text-foreground">שחר</figcaption>
+              </figure>
+            </PairOffer>
+          </div>
+        </div>
       </section>
 
       <section className="bg-warm-gray-50 px-5 py-12 md:py-14">

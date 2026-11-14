@@ -31,24 +31,14 @@ export default function About() {
 
         {/* --- איך זה התחיל --- */}
         <FadeIn className="mb-14 space-y-5 leading-relaxed text-muted-foreground">
-          {/* S3 (Lihi's note, 14.11.2026): the wedding as more than the happy event, a process and a step up. DRAFT he copy: awaiting Lihi. */}
           <p className="border-r-2 border-terracotta-300 pr-4 text-lg font-medium text-foreground">
-            רצינו שהחתונה שלנו תהיה יותר מאירוע שמח.
+            לפני שנה התחתנו.
           </p>
           <p className="text-[0.95rem]">
-            אנחנו ביחד כבר למעלה מעשור, והחתונה עצמה היא שמחה גדולה. אבל רצינו שהתקופה שלפניה
-            תהיה גם תהליך: לעצור, לדבר על החיים המשותפים שלנו, ולעלות מדרגה בזוגיות.
+            אנחנו ביחד כבר למעלה מעשור. בתוך כל הטירוף הלוגיסטי של החתונה הרגשנו
+            שאנחנו רוצים לצקת לתקופה הזאת קצת יותר משמעות - לא רק לתכנן אירוע,
+            אלא באמת לעצור ולדבר על החיים המשותפים שלנו.
           </p>
-          <figure className="mx-auto max-w-[260px]">
-            <img
-              src="/illustrations/about-wedding-prep.jpg"
-              alt="ליהי בבוקר החתונה, מצולמת מהגב"
-              loading="lazy"
-              width={720}
-              height={1083}
-              className="w-full rounded-2xl object-cover shadow-md ring-1 ring-terracotta-100"
-            />
-          </figure>
           <p className="text-[0.95rem]">
             אז קבענו לעצמנו דייט שבועי - בכל פעם נושא אחר. כסף, חלומות, חיכוכים,
             הבית שלנו. ולמרות שיש לנו תקשורת טובה - משהו בשיח הזה היה אחר.
@@ -95,8 +85,9 @@ export default function About() {
 
         <FadeIn className="mb-14 space-y-5 leading-relaxed text-muted-foreground">
           <p className="text-[0.95rem]">
-            אחרי החתונה שאלתי חברה שהתארסה איך ההכנות. היא ענתה: &quot;את יודעת, עוברים ורואים אולמות&quot;.
-            באותו רגע הבנתי שאני רוצה לתת את זה גם לזוגות אחרים.
+            יום אחד עברתי ליד הכתובה בסלון וחשבתי על חברים שטובעים בים של ספקים
+            והחלטות. אמרתי לעצמי: מה שעשינו היה כל כך משמעותי - אני חייבת לאפשר
+            את זה לזוגות אחרים.
           </p>
 
           <div className="rounded-xl bg-terracotta-50/50 px-5 py-4">
@@ -176,7 +167,8 @@ export default function About() {
             בואו נדבר
           </h2>
           <p className="mb-4 text-muted-foreground">
-            <strong className="text-foreground">ליהי,</strong> פסיכולוגית ודוקטורנטית. אוהבת שיחות מהלב.
+            <strong className="text-foreground">ליהי.</strong> דוקטורנטית
+            לפסיכולוגיה ובוגרת תואר שני בפסיכולוגיה שיקומית. אוהבת שיחות מהלב.
           </p>
           <p className="mb-6 text-muted-foreground">
             מזמינה אתכם להתייעץ ולהיות בקשר.

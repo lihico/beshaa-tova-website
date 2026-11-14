@@ -30,9 +30,9 @@ const steps = [
 ];
 
 const BAND = [
-  { t: "זמן אישי, ואז שיחה", d: "כל מפגש מתחיל בכמה דקות של כל אחד עם החוברת שלו, ואז נפגשים לשיחה זוגית." },
-  { t: "הכל כתוב ומובנה", d: "שאלות, דוגמאות ותרגילים מוכנים. לא צריך מנחה, ולא צריך להמציא." },
-  { t: "מבוסס מחקר", d: "פותח על בסיס מחקר וידע בתחום הפסיכולוגיה והזוגיות." },
+  // W2 in Lihi's words (15.11.2026), two short points.
+  { t: "זמן אישי, ואז שיחה", d: "כל מפגש מתחיל בחימום, חלק של כל אחד עם עצמו, ואז עוברים לשיחה הזוגית." },
+  { t: "הכל כתוב ומובנה", d: "שאלות, דוגמאות ותרגילים. לא צריך מנחה, רק לפנות זמן וקשב." },
 ];
 
 export function HowItWorksV2() {
@@ -85,12 +85,11 @@ export function HowItWorksV2() {
             ))}
           </Stagger>
         </div>
-        {/* W2 (Lihi's note, 14.11.2026): the structure in one short band; "פותח על בסיס מחקר", not "written by Lihi".
-            DRAFT he copy: awaiting Lihi. */}
+        {/* W2 (Lihi, 15.11.2026): the structure in one short band, her wording. */}
         <FadeIn>
           <div className="mx-auto mt-7 max-w-3xl rounded-2xl bg-[#faf6f1] px-5 py-5 md:mt-10 md:px-8">
             <h3 className="mb-3 text-center text-lg font-bold text-foreground md:text-xl">רק שניכם. וכל השאר כבר מוכן.</h3>
-            <div className="grid gap-2.5 text-right md:grid-cols-3 md:gap-4">
+            <div className="grid gap-2.5 text-right md:grid-cols-2 md:gap-4">
               {BAND.map((b) => (
                 <div key={b.t} className="rounded-xl bg-white px-4 py-3 shadow-sm">
                   <p className="text-[0.95rem] font-bold text-terracotta-700">{b.t}</p>

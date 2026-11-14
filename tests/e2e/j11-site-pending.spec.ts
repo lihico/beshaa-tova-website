@@ -115,12 +115,9 @@ test("J11h landing versions: ?for=married hero, ?for=gift to the gift page with 
   await page.waitForURL(/\/give-a-gift\?utm_source=meta&utm_campaign=2611_gift&ref=fb-gift1$/);
 });
 
-test("J11i About story and photo; FAQ \"על מה זה מבוסס?\" without names", async ({ page }) => {
+test("J11i FAQ \"על מה זה מבוסס?\" without names; About unchanged for now (S3 waits for new photos)", async ({ page }) => {
   await page.goto("/about");
-  await expect(page.getByText("רצינו שהחתונה שלנו תהיה יותר מאירוע שמח.")).toBeVisible();
-  await expect(page.locator('img[src="/illustrations/about-wedding-prep.jpg"]')).toHaveCount(1);
-  await expect(page.locator("body")).toContainText("פסיכולוגית ודוקטורנטית. אוהבת שיחות מהלב.");
-  await expect(page.locator("body")).not.toContainText("לפני שנה התחתנו");
+  await expect(page.locator('img[src="/illustrations/about-wedding-prep.jpg"]')).toHaveCount(0);
   await page.goto("/faq");
   await page.getByRole("button", { name: "על מה זה מבוסס?" }).click();
   await expect(page.locator("body")).toContainText("פותחו על בסיס מחקר וידע בתחום הפסיכולוגיה והזוגיות");

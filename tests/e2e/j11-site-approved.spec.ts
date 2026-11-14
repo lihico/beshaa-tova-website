@@ -56,13 +56,11 @@ test("J11b gift page quotes and FAQ questions; student code on the flyer page", 
   await expect(page.getByRole("link", { name: "STUDENT2026" })).toHaveAttribute("href", "/order?promo=STUDENT2026");
 });
 
-test("J11c order form: extras folded, zip optional, review screen masked for Clarity, price box readable", async ({ page }) => {
+test("J11c order form: review screen masked for Clarity, price box readable (O3 and U4 taken back, 15.11.2026)", async ({ page }) => {
   await page.goto("/order");
   await page.getByRole("button", { name: /אנחנו מזמינים לעצמנו/ }).click();
-  await expect(page.getByText("הכי מתאים כששניכם רוצים.")).toBeVisible();
-  await expect(page.getByTestId("extras-toggle")).toHaveAttribute("aria-expanded", "false");
-  await expect(page.getByPlaceholder("למשל: YAEL-TOMER-2609")).toHaveCount(0);
-  await page.getByTestId("extras-toggle").click();
+  await expect(page.getByText("הכי מתאים כששניכם רוצים.")).toHaveCount(0);
+  await expect(page.getByTestId("extras-toggle")).toHaveCount(0);
   await expect(page.getByPlaceholder("למשל: YAEL-TOMER-2609")).toBeVisible();
   await expect(page.getByTestId("kit-value")).toHaveAttribute("data-clarity-unmask", "true");
 
@@ -74,8 +72,8 @@ test("J11c order form: extras folded, zip optional, review screen masked for Cla
   await page.locator("#lastName").fill("לוי");
   await page.locator("#street").fill("הרצל 10");
   await page.locator("#city").fill("חיפה");
-  // no zip code
-  await fillMeetings(page);   // the pending set asks for exactly as many meetings as the kit (O2)
+  await page.locator("#zipCode").fill("3303100");
+  await fillMeetings(page);
   const terms = page.locator("label", { hasText: "תנאי השימוש" }).locator("[role=checkbox]");
   await terms.click();
   await page.getByRole("button", { name: /להזמנה \(תשלום לאחר מכן\)/ }).click();
